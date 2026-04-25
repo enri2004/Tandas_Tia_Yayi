@@ -1,28 +1,55 @@
+import React, { useEffect, useState } from "react";
+import { View, StyleSheet, FlatList, Text } from "react-native";
+import Pag from "../../../components/Pagos_admin/Pagos_admin";
+import { obtenerComprobantes } from "@/utils/api/comprobantes/comprobantesApi";
 
-import React from "react";
-import { View, StyleSheet, FlatList } from "react-native";
-import Pag from "../../../components/Pagos_admin/Pagos_admin"
-
-
-const data = [
-  { id: "1", nombre: "Juan Pérez", tandas: "Tandas Yayi", pago: "$500", pendiente: "Pendiente" },
-  { id: "2", nombre: "Juan Pérez", tandas: "Tandas Yayi", pago: "$500", pendiente: "Pendiente" },
-  { id: "3", nombre: "Juan Pérez", tandas: "Tandas Yayi", pago: "$500", pendiente: "Pendiente" },
-];
+type ComprobanteListItem = {
+  _id: string;
+  monto: number;
+  estado: "pendiente" | "aprobado" | "rechazado";
+  tanda?: {
+    nombre?: string;
+  };
+  usuario?: {
+    nombre?: string;
+  };
+};
 
 export default function Pagos() {
+  const [data, setData] = useState<ComprobanteListItem[]>([]);
+
+  useEffect(() => {
+    const cargar = async () => {
+      try {
+        const respuesta = await obtenerComprobantes({ estado: "pendiente" });
+        setData(respuesta);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+    cargar();
+  }, []);
+
   return (
     <View style={styles.container}>
       <FlatList
         data={data}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => item._id}
         showsVerticalScrollIndicator={false}
+        ListEmptyComponent={
+          <View style={styles.emptyState}>
+            <Text style={styles.emptyTitle}>No hay comprobantes pendientes</Text>
+            <Text style={styles.emptyText}>Los nuevos envios apareceran aqui para revision.</Text>
+          </View>
+        }
         renderItem={({ item }) => (
           <Pag
-            nombre={item.nombre}
-            tandas={item.tandas}
-            pago={item.pago}
-            pendiente={item.pendiente}
+            id={item._id}
+            nombre={item.usuario?.nombre || "Usuario"}
+            tandas={item.tanda?.nombre || "Sin tanda"}
+            pago={`$${item.monto || 0}`}
+            pendiente={item.estado}
           />
         )}
       />
@@ -30,101 +57,25 @@ export default function Pagos() {
   );
 }
 
-
 const styles = StyleSheet.create({
-
-container: {
-  flex: 1,
-  backgroundColor: "#f2f4f7",
-  paddingTop: 10
-},
-
-card: {
-  backgroundColor: "#fff",
-  marginHorizontal: 16,
-  marginVertical: 8,
-  borderRadius: 16,
-  padding: 15,
-  elevation: 3
-},
-
-/* HEADER */
-header: {
-  flexDirection: "row",
-  alignItems: "center",
-  marginBottom: 10
-},
-
-avatar: {
-  width: 55,
-  height: 55,
-  borderRadius: 100
-},
-
-headerText: {
-  flex: 1,
-  marginLeft: 10
-},
-
-nombre: {
-  fontSize: 15,
-  fontWeight: "600"
-},
-
-tanda: {
-  fontSize: 12,
-  color: "#777"
-},
-
-/* BADGE */
-badge: {
-  backgroundColor: "#fef3c7",
-  paddingHorizontal: 10,
-  paddingVertical: 4,
-  borderRadius: 20
-},
-
-badgeText: {
-  color: "#d97706",
-  fontSize: 11,
-  fontWeight: "bold"
-},
-
-/* BODY */
-body: {
-  flexDirection: "row",
-  justifyContent: "space-between",
-  alignItems: "center",
-  marginBottom: 10
-},
-
-label: {
-  fontSize: 12,
-  color: "#777"
-},
-
-pago: {
-  fontSize: 18,
-  fontWeight: "bold",
-  marginTop: 2
-},
-
-iconos: {
-  flexDirection: "row",
-  gap: 12
-},
-
-/* BOTÓN */
-boton: {
-  backgroundColor: "#22c55e",
-  paddingVertical: 10,
-  borderRadius: 10,
-  alignItems: "center"
-},
-
-textoBoton: {
-  color: "#fff",
-  fontWeight: "600"
-}
-
+  container: {
+    flex: 1,
+    backgroundColor: "#f2f4f7",
+    paddingTop: 10,
+  },
+  emptyState: {
+    marginTop: 60,
+    alignItems: "center",
+    paddingHorizontal: 24,
+  },
+  emptyTitle: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: "#1f2937",
+    marginBottom: 8,
+  },
+  emptyText: {
+    textAlign: "center",
+    color: "#6b7280",
+  },
 });

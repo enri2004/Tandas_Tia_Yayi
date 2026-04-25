@@ -1,20 +1,21 @@
-import React, { useRef, useEffect } from "react";
-import { View, Text, StyleSheet, Pressable, Image, Animated } from "react-native";
 import { router } from "expo-router";
-import { useNavigation } from "@react-navigation/native";
+import React, { useEffect, useRef } from "react";
+import { Animated, Image, Pressable, StyleSheet, Text, View } from "react-native";
 
 type Props = {
+  id:string;
   nombre: string;
   pago: string;
   participantes: number;
-  turno: number;
+  turno?: number | null;
   estado: string;
-  imagen: any;
+  imagen?: string;
   tipo: "success" | "warning" | "danger";
   rol: "User" | "admin";
 };
 
 export default function CajaInput({
+  id,
   nombre,
   pago,
   participantes,
@@ -31,7 +32,6 @@ export default function CajaInput({
     warning: "#f59e0b",   // naranja
     danger: "#ef4444"     // rojo
   };
- const navigation = useNavigation();
   const colorLinea = colores[tipo];
 
   const anim = useRef(new Animated.Value(0)).current;
@@ -51,32 +51,47 @@ export default function CajaInput({
         })
       ])
     ).start();
-  },[]);
+  },[anim]);
 
 
 const irPantalla = () => {
+  if (rol === "User") {
+    router.push({
+      pathname: "/screen/user/detalles",
+      params: { id },
+    });
+  } else {
+    router.push({
+      pathname: "/screen/admin/detalleTanda",
+      params: { id },
+    });
+  }
+  console.log(id)
+};
 
-    if(rol === "User"){
-      router.push("/src/screen/user/detalles");
-    }else{
-      router.push("/");
-    }
+   const esUrlValida =
+    typeof imagen === "string" &&
+    imagen.trim().length > 0 &&
+    (imagen.startsWith("http://") || imagen.startsWith("https://"));
 
-  };
-
+  const imageSource = esUrlValida
+    ? { uri: imagen }
+    : require("../../assets/images/icon.png");
   return (
     <View style={styles.card}>
 
       <Animated.View style={[styles.linea,{backgroundColor:colorLinea}]} />
 
-      <Image source={imagen} style={styles.profile} />
+      <Image source={imageSource} style={styles.profile} />
 
       <View style={styles.info}>
         <View>
           <Text style={styles.titulo}>{nombre}</Text>
           <Text style={styles.texto}>Pago: {pago}</Text>
           <Text style={styles.texto}>Participantes: {participantes}</Text>
-          <Text style={styles.texto}>Turno: #{turno}</Text>
+          <Text style={styles.texto}>
+            Turno: {typeof turno === "number" && turno > 0 ? `#${turno}` : "Pendiente"}
+          </Text>
           <Text style={styles.estado}>Estado: {estado}</Text>
         </View>
 
@@ -117,7 +132,8 @@ const styles = StyleSheet.create({
     width:70,
     height:70,
     marginRight:10,
-    marginTop:"5%"
+    marginTop:"5%",
+    borderRadius:12
   },
 
   info:{

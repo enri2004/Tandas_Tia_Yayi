@@ -9,9 +9,19 @@ type Props = {
   value: string;
   onChange: (text: string) => void;
   placeholder?: string;
+  keyboardType?: "default" | "numeric" | "email-address";
+  multiline?: boolean;
 };
 
-export default function InputCard({ icon, label, value, onChange, placeholder }: Props) {
+export default function InputCard({
+  icon,
+  label,
+  value,
+  onChange,
+  placeholder,
+  keyboardType = "default",
+  multiline = false,
+}: Props) {
   return (
     <View style={styles.card}>
       <View style={styles.row}>
@@ -22,9 +32,12 @@ export default function InputCard({ icon, label, value, onChange, placeholder }:
       <TextInput
         placeholder={placeholder}
         placeholderTextColor="#aaa"
-        style={styles.input}
+        style={[styles.input, multiline && styles.inputMultiline]}
         value={value}
         onChangeText={onChange}
+        keyboardType={keyboardType}
+        multiline={multiline}
+        textAlignVertical={multiline ? "top" : "center"}
       />
     </View>
   );
@@ -49,6 +62,9 @@ const styles = StyleSheet.create({
   input: {
     color: "#000",
     padding: 10,
-    borderRadius: 8
-  }
+    borderRadius: 8,
+  },
+  inputMultiline: {
+    minHeight: 86,
+  },
 });

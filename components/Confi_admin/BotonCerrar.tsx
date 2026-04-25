@@ -1,41 +1,34 @@
 import React from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity
-} from "react-native";
+import { Text, StyleSheet, TouchableOpacity } from "react-native";
 
-export default function BotonCerrar() {
+type Props = {
+  onPress: () => void;
+};
+
+export default function BotonCerrar({ onPress }: Props) {
   return (
-  
-      <TouchableOpacity style={styles.logout}>
-        <Text style={styles.logoutText}>Cerrar sesión</Text>
-        <Text style={styles.logoutSub}>Admin finaliza sesión</Text>
-      </TouchableOpacity>
-
+    <TouchableOpacity style={styles.logout} onPress={onPress}>
+      <Text style={styles.logoutText}>Cerrar sesion</Text>
+      <Text style={styles.logoutSub}>Admin finaliza sesion</Text>
+    </TouchableOpacity>
   );
 }
 
-
-/* ESTILOS */
 const styles = StyleSheet.create({
-   logout: {
+  logout: {
     backgroundColor: "#E74C3C",
     padding: 15,
     borderRadius: 12,
     alignItems: "center",
-    marginTop: 20
+    marginTop: 20,
   },
-  
   logoutText: {
     color: "#FFF",
     fontWeight: "bold",
-    fontSize: 16
+    fontSize: 16,
   },
-
   logoutSub: {
     color: "#FFF",
-    fontSize: 12
-  }
+    fontSize: 12,
+  },
 });

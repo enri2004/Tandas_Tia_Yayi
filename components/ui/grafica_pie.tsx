@@ -4,49 +4,46 @@ import { PieChart } from "react-native-chart-kit";
 
 const screenWidth = Dimensions.get("window").width;
 
-export default function GraficaPie(){
+type PieItem = {
+  name: string;
+  population: number;
+  color: string;
+  legendFontColor?: string;
+  legendFontSize?: number;
+};
 
-const data = [
-  {
-    name: "Pagados",
-    population: 70,
-    color: "green",
-    legendFontColor: "#333",
-    legendFontSize: 14
-  },
-  {
-    name: "Pendientes",
-    population: 20,
-    color: "orange",
-    legendFontColor: "#333",
-    legendFontSize: 14
-  },
-  {
-    name: "Atrasados",
-    population: 10,
-    color: "red",
-    legendFontColor: "#333",
-    legendFontSize: 14
-  }
-];
+type Props = {
+  data?: PieItem[];
+};
 
-return(
+export default function GraficaPie({ data }: Props) {
+  const pieData =
+    data && data.length
+      ? data
+      : [
+          {
+            name: "Pagados",
+            population: 1,
+            color: "green",
+            legendFontColor: "#333",
+            legendFontSize: 12,
+          },
+        ];
 
-<View>
-
-<PieChart
-  data={data}
-  width={screenWidth * 0.45}
-  height={100}
-  chartConfig={{
-    color: () => `#000`
-  }}
-  accessor={"population"}
-  backgroundColor={"transparent"}
-  paddingLeft={"15"}
-/>
-
-</View>
-
-);
+  return (
+    <View>
+      <PieChart
+        data={pieData}
+        width={screenWidth * 0.45}
+        height={120}
+        chartConfig={{
+          color: () => `#000`,
+        }}
+        accessor={"population"}
+        backgroundColor={"transparent"}
+        paddingLeft={"10"}
+        hasLegend
+      />
+    </View>
+  );
 }

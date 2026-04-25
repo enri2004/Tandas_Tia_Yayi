@@ -1,6 +1,6 @@
 import React, { ReactNode } from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
-import { Dimensions } from "react-native";
+import { useResponsive } from "../../hooks/useResponsive";
 
 // 👇 tipos
 type Props = {
@@ -9,16 +9,17 @@ type Props = {
   color: string;
   onPress?:()=>void;
 };
-
-const { width } = Dimensions.get("window");
-
 export default function ActionButton({ icon, text, color,onPress }: Props) {
+  const { width, isTablet, isDesktop, bodySize } = useResponsive();
+  const itemWidth = isDesktop ? width * 0.12 : isTablet ? width * 0.18 : width * 0.22;
+  const iconSize = isDesktop ? width * 0.065 : isTablet ? width * 0.11 : width * 0.15;
+
   return (
-    <TouchableOpacity style={styles.action} onPress={onPress}>
-      <View style={[styles.icon, { backgroundColor: color }]}>
+    <TouchableOpacity style={[styles.action, { width: itemWidth }]} onPress={onPress}>
+      <View style={[styles.icon, { backgroundColor: color, width: iconSize, height: iconSize }]}>
         {icon}
       </View>
-      <Text style={styles.text}>{text}</Text>
+      <Text style={[styles.text, { fontSize: bodySize }]}>{text}</Text>
     </TouchableOpacity>
   );
 }
@@ -26,17 +27,13 @@ export default function ActionButton({ icon, text, color,onPress }: Props) {
 const styles = StyleSheet.create({
   action:{
     alignItems:"center",
-    width:width*0.22,
   },
   icon:{
-    width:width * 0.15,
-    height:width * 0.15,
     borderRadius:100,
     justifyContent:"center",
     alignItems:"center"
   },
   text:{
-    fontSize:width*0.032,
     textAlign:"center",
     marginTop:6
   }

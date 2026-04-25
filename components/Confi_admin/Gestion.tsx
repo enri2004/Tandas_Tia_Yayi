@@ -1,41 +1,55 @@
 import React from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-} from "react-native";
-import Item from "./item"
+import { View, Text, StyleSheet } from "react-native";
+import { router } from "expo-router";
+import Item from "./item";
+
 export default function Gestion() {
   return (
-  <View>
-      <Text style={styles.section}>GESTIÓN DE TANDAS</Text>
+    <View>
+      <Text style={styles.section}>GESTION DE TANDAS</Text>
 
       <View style={styles.card}>
-        <Item icon="book-outline" title="Reglas de tandas" subtitle="Definir normas y parámetros" />
-        <Item icon="cash-outline" title="Montos mínimos" subtitle="Establecer límites de cobro" />
-        <Item icon="settings-outline" title="Administración general" subtitle="Control global de la tanda" />
+        <Item
+          icon="people-outline"
+          title="Usuarios"
+          subtitle="Buscar perfiles y enviar solicitudes"
+          onPress={() => router.push("/screen/admin/Invitar")}
+        />
+        <Item
+          icon="book-outline"
+          title="Reglas de tandas"
+          subtitle="Definir normas y parametros"
+          onPress={() => router.push("/screen/admin/reglasTandas")}
+        />
+        <Item
+          icon="cash-outline"
+          title="Montos minimos"
+          subtitle="Establecer limites de cobro"
+          onPress={() => router.push("/screen/admin/montosMinimos")}
+        />
+        <Item
+          icon="settings-outline"
+          title="Administracion general"
+          subtitle="Control global de la tanda"
+          onPress={() => router.push("/screen/admin/administracionGeneral")}
+        />
       </View>
-       </View>
-
-      
+    </View>
   );
 }
 
-
 const styles = StyleSheet.create({
-
   section: {
     marginTop: 15,
     marginBottom: 8,
     fontWeight: "bold",
-    color: "#888"
+    color: "#888",
   },
-
   card: {
     backgroundColor: "#FFF",
     borderRadius: 15,
     padding: 10,
     marginBottom: 10,
-    elevation: 2
+    elevation: 2,
   },
 });

@@ -1,28 +1,56 @@
 import React from "react";
-import { View, Text, StyleSheet } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { router } from "expo-router";
+import { View, Text, StyleSheet, ScrollView, RefreshControl } from "react-native";
 import Hader from "../../../components/indexadmin/HarderIndexadmin";
 import CardResumen from "../../../components/indexadmin/CardsAdmin";
-import ListaTandas from "../../../components/indexadmin/ListaTandas";
+import TandasAdminPanel from "../../../components/indexadmin/TandasAdminPanel";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import { useAdminDashboard } from "../../../hooks/useAdminDashboard";
+import { useResponsive } from "../../../hooks/useResponsive";
 
 export default function AdminDashboard() {
-  return (
-    <View style={styles.container}>
-        <Hader/>
+  const insets = useSafeAreaInsets();
+  const { horizontalPadding, titleSize, tandasPanelHeight } = useResponsive();
+  const { data, loading, error, recargar } = useAdminDashboard();
 
-        <CardResumen/>
-      <Text style={styles.section}>Tandas activas</Text>
-      <ListaTandas />
-    </View>
+  return (
+    <SafeAreaView style={styles.safeArea} edges={["left", "right"]}>
+      <ScrollView
+        style={styles.container}
+        refreshControl={<RefreshControl refreshing={loading} onRefresh={recargar} />}
+        contentContainerStyle={{
+          paddingTop: 8,
+          paddingBottom: 34 + Math.max(insets.bottom, 8),
+          paddingHorizontal: horizontalPadding,
+        }}
+        showsVerticalScrollIndicator={false}
+      >
+        <Hader
+          adminName={data?.admin?.nombre || "Administrador"}
+          notificacionesSinLeer={data?.resumen?.notificacionesSinLeer || 0}
+        />
+
+        <CardResumen
+          tandasActivas={data?.resumen?.tandasActivas || 0}
+          dineroRecaudado={data?.resumen?.dineroRecaudado || 0}
+          pagosPendientes={data?.resumen?.pagosPendientes || 0}
+          tandasFinalizadas={data?.resumen?.tandasFinalizadas || 0}
+        />
+
+        <Text style={[styles.section, { fontSize: titleSize }]}>Tandas activas</Text>
+        <TandasAdminPanel
+          tandas={data?.tandas || []}
+          loading={loading}
+          error={error}
+          maxHeight={tandasPanelHeight}
+        />
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { padding: 20, backgroundColor: "#f2f2f2", flex: 1 },
-  header: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 15 },
-  title: { fontSize: 22, fontWeight: "bold" },
-  subtitle: { color: "gray" },
-  cardsContainer: { flexDirection: "row", flexWrap: "wrap", justifyContent: "space-between" },
-  section: { fontSize: 18, fontWeight: "bold", marginTop: 20, marginBottom: 10 },
+  safeArea: { flex: 1, backgroundColor: "#f5f6fa" },
+  container: { backgroundColor: "#f5f6fa", flex: 1 },
+  section: { fontWeight: "bold", marginTop: 20, marginBottom: 10, color: "#111827" },
 });
+

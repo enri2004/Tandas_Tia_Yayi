@@ -2,17 +2,27 @@ import { View, StyleSheet } from "react-native";
 import GraficaBarras from "../ui/grafica_barra";
 import GraficaPie from "../ui/grafica_pie";
 
+type Props = {
+  barLabels: string[];
+  barValues: number[];
+  pieData: Array<{
+    name: string;
+    population: number;
+    color: string;
+    legendFontColor?: string;
+    legendFontSize?: number;
+  }>;
+};
 
-
-export default function Graficas() {
+export default function Graficas({ barLabels, barValues, pieData }: Props) {
   return (
     <View style={styles.container}>
       <View style={styles.grafica}>
-        <GraficaBarras />
+        <GraficaBarras labels={barLabels} values={barValues} />
       </View>
 
       <View style={styles.grafica}>
-        <GraficaPie />
+        <GraficaPie data={pieData} />
       </View>
     </View>
   );

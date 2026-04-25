@@ -1,29 +1,42 @@
 // /components/detalles/CardInfo.tsx
 import React from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
+type Props={
+  Valor:number,
+  Turno:number,
+  Participantes:number,
+  Pagos:number
+}
 
-export default function CardInfo() {
+export default function CardInfo({
+  Valor,
+  Pagos,
+  Turno,
+  Participantes,
+}:Props) {
+   
+  const total = Valor * Participantes;
   return (
     <View style={styles.cardInfo}>
       <View style={styles.grid}>
         <View style={styles.item}>
           <Text style={styles.label}>Pago por turno</Text>
-          <Text style={styles.valor}>$1,000</Text>
+          <Text style={styles.valor}>${Valor}</Text>
         </View>
 
         <View style={styles.item}>
-          <Text style={styles.label}>Pago total</Text>
-          <Text style={styles.valor}>$5,000</Text>
+          <Text style={styles.label}>Pago</Text>
+          <Text style={styles.valor}>{Pagos}</Text>
         </View>
 
         <View style={styles.item}>
           <Text style={styles.label}>Turno</Text>
-          <Text style={styles.valor}>#3</Text>
+          <Text style={styles.valor}>{Turno > 0 ? `#${Turno}` : "Pendiente"}</Text>
         </View>
 
         <View style={styles.item}>
           <Text style={styles.label}>Recibes</Text>
-          <Text style={styles.valor}>$5,000</Text>
+          <Text style={styles.valor}>${total}</Text>
         </View>
       </View>
 
@@ -73,5 +86,5 @@ const styles = StyleSheet.create({
     width:"100%",
     backgroundColor:"#eee",
     top:"50%"
-  }
+  },
 });

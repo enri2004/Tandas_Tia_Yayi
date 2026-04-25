@@ -1,11 +1,5 @@
-import React from "react";
-import {View , Text} from "react-native"
+import SolicitudesAmistad from "@/app/screen/user/solicitudesAmistad";
 
-
-export default function chat(){
-    return(
-        <View>
-            <Text>tex</Text>
-        </View>
-    )
+export default function AmigosTab() {
+  return <SolicitudesAmistad />;
 }

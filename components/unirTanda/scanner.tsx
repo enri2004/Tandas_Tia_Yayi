@@ -6,14 +6,30 @@ import {
   StyleSheet,
   Animated,
   Easing,
-  TouchableOpacity
+  TouchableOpacity,
 } from "react-native";
 import * as Haptics from "expo-haptics";
-import { Linking } from "react-native";
-import { useFocusEffect } from "@react-navigation/native";
+import { useFocusEffect, useRouter } from "expo-router";
+
+const obtenerCodigoDesdeTexto = (valor: string) => {
+  if (!valor) {
+    return "";
+  }
+
+  if (valor.startsWith("tandasapp://")) {
+    try {
+      const codigo = valor.split("codigo=")[1];
+      return codigo ? decodeURIComponent(codigo) : "";
+    } catch {
+      return "";
+    }
+  }
+
+  return valor.trim();
+};
 
 export default function Scanner() {
-
+  const router = useRouter();
   const [permission, requestPermission] = useCameraPermissions();
   const [scanned, setScanned] = useState(false);
   const [dataScanned, setDataScanned] = useState("");
@@ -21,7 +37,6 @@ export default function Scanner() {
 
   const scanLine = useRef(new Animated.Value(0)).current;
 
-  // 🔐 Permisos + animación
   useEffect(() => {
     requestPermission();
 
@@ -30,56 +45,50 @@ export default function Scanner() {
         toValue: 1,
         duration: 2000,
         easing: Easing.linear,
-        useNativeDriver: true
+        useNativeDriver: true,
       })
     ).start();
-  }, []);
+  }, [requestPermission, scanLine]);
 
-  // 🔥 RESET cuando regresas a la pantalla
   useFocusEffect(
     useCallback(() => {
       setScanned(false);
       setDataScanned("");
-      setRefresh(prev => prev + 1); // reinicia cámara
+      setRefresh((prev) => prev + 1);
     }, [])
   );
 
   if (!permission) return <Text>Cargando...</Text>;
   if (!permission.granted) return <Text>No hay permisos</Text>;
 
-const handleScan = async ({ data }) => {
-  if (scanned) return;
+  const handleScan = async ({ data }: { data: string }) => {
+    if (scanned) return;
 
-  setScanned(true);
-  setDataScanned(data);
+    const codigo = obtenerCodigoDesdeTexto(data);
 
-  // vibración
-  Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    setScanned(true);
+    setDataScanned(codigo || data);
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
 
-  // abrir links
-  if (data.startsWith("http://") || data.startsWith("https://")) {
-    try {
-      await Linking.openURL(data);
-    } catch (error) {
-      console.log("No se pudo abrir");
+    if (codigo) {
+      setTimeout(() => {
+        router.replace(`/screen/user/Unir_Tadas?codigo=${encodeURIComponent(codigo)}`);
+      }, 400);
+      return;
     }
-  }
 
-  // 🔥 REACTIVAR ESCÁNER AUTOMÁTICAMENTE
-  setTimeout(() => {
-    setScanned(false);
-  }, 1500); // puedes ajustar tiempo
-};
+    setTimeout(() => {
+      setScanned(false);
+    }, 1500);
+  };
 
   const translateY = scanLine.interpolate({
     inputRange: [0, 1],
-    outputRange: [0, 220]
+    outputRange: [0, 220],
   });
 
   return (
     <View style={{ flex: 1 }}>
-
-      {/* 📷 Cámara */}
       <CameraView
         key={refresh}
         style={StyleSheet.absoluteFillObject}
@@ -87,36 +96,26 @@ const handleScan = async ({ data }) => {
         onBarcodeScanned={scanned ? undefined : handleScan}
       />
 
-      {/* 🔲 Overlay */}
       <View style={styles.overlay}>
-
         <View style={styles.scanBox}>
-
-          {/* 🔴 línea animada */}
           <Animated.View
             style={[
               styles.scanLine,
-              { transform: [{ translateY }] }
+              { transform: [{ translateY }] },
             ]}
           />
 
-          {/* 🟢 esquinas */}
           <View style={[styles.corner, styles.topLeft]} />
           <View style={[styles.corner, styles.topRight]} />
           <View style={[styles.corner, styles.bottomLeft]} />
           <View style={[styles.corner, styles.bottomRight]} />
-
         </View>
 
-        {/* 📦 resultado */}
         {scanned && (
           <View style={styles.resultBox}>
-            <Text style={{ color: "white" }}>QR detectado:</Text>
-            <Text style={{ color: "#00FF99", marginTop: 5 }}>
-              {dataScanned}
-            </Text>
+            <Text style={{ color: "white" }}>Codigo detectado:</Text>
+            <Text style={{ color: "#22c55e", marginTop: 5 }}>{dataScanned}</Text>
 
-            {/* 🔄 botón para volver a escanear */}
             <TouchableOpacity
               style={styles.button}
               onPress={() => {
@@ -128,84 +127,71 @@ const handleScan = async ({ data }) => {
             </TouchableOpacity>
           </View>
         )}
-
       </View>
-
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-
   overlay: {
     ...StyleSheet.absoluteFillObject,
     justifyContent: "center",
     alignItems: "center",
   },
-
   scanBox: {
     width: 250,
     height: 250,
     borderRadius: 20,
-    overflow: "hidden"
+    overflow: "hidden",
   },
-
   scanLine: {
     position: "absolute",
     width: "100%",
     height: 2,
-    backgroundColor: "red"
+    backgroundColor: "#ef4444",
   },
-
   corner: {
     position: "absolute",
     width: 30,
     height: 30,
-    borderColor: "#00FF99"
+    borderColor: "#22c55e",
   },
-
   topLeft: {
     top: 0,
     left: 0,
     borderTopWidth: 4,
-    borderLeftWidth: 4
+    borderLeftWidth: 4,
   },
-
   topRight: {
     top: 0,
     right: 0,
     borderTopWidth: 4,
-    borderRightWidth: 4
+    borderRightWidth: 4,
   },
-
   bottomLeft: {
     bottom: 0,
     left: 0,
     borderBottomWidth: 4,
-    borderLeftWidth: 4
+    borderLeftWidth: 4,
   },
-
   bottomRight: {
     bottom: 0,
     right: 0,
     borderBottomWidth: 4,
-    borderRightWidth: 4
+    borderRightWidth: 4,
   },
-
   resultBox: {
     marginTop: 20,
     backgroundColor: "rgba(0,0,0,0.7)",
     padding: 15,
     borderRadius: 10,
-    alignItems: "center"
+    alignItems: "center",
   },
-
   button: {
     marginTop: 10,
-    backgroundColor: "#00FF99",
+    backgroundColor: "#22c55e",
     paddingHorizontal: 15,
     paddingVertical: 8,
-    borderRadius: 8
-  }
-
+    borderRadius: 8,
+  },
 });

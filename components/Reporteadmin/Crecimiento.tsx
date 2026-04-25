@@ -2,15 +2,31 @@
 
 import { View, Text, Pressable, StyleSheet } from "react-native";
 
-export default function Crecimiento() {
+type Props = {
+  monto: number;
+  porcentaje: number;
+};
+
+const formatearMoneda = (valor: number) =>
+  new Intl.NumberFormat("es-MX", {
+    style: "currency",
+    currency: "MXN",
+    maximumFractionDigits: 0,
+  }).format(Number(valor || 0));
+
+export default function Crecimiento({ monto, porcentaje }: Props) {
+  const positivo = porcentaje >= 0;
   return (
     <View style={styles.caja}>
       <Text style={styles.titulo}>Indicador de Crecimiento</Text>
 
-      <Text>Este Mes: $5,200</Text>
+      <Text>Avance actual: {formatearMoneda(monto)}</Text>
 
-      <Pressable style={styles.boton}>
-        <Text style={styles.texto}>+12%</Text>
+      <Pressable style={[styles.boton, !positivo && styles.botonNegativo]}>
+        <Text style={styles.texto}>
+          {positivo ? "+" : ""}
+          {porcentaje.toFixed(0)}%
+        </Text>
       </Pressable>
     </View>
   );
@@ -37,5 +53,8 @@ const styles = StyleSheet.create({
   texto: {
     color: "white",
     fontWeight: "bold"
+  },
+  botonNegativo: {
+    backgroundColor: "#f59e0b",
   }
 });

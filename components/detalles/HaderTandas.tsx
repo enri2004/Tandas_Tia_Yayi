@@ -1,11 +1,16 @@
 
-import { View, Text, StyleSheet } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
+type Props={
+Titulo:string,
+Participantes:number,
+}
 
-export default function HeaderTanda() {
+
+export default function HeaderTanda({Titulo, Participantes}:Props) {
   return (
     <View style={styles.header}>
-      <Text style={styles.titulo}>Tanda Oficina</Text>
-      <Text style={styles.subtitulo}>Activa • 5 participantes</Text>
+      <Text style={styles.titulo}>{Titulo}</Text>
+      <Text style={styles.subtitulo}>Activa •  {Participantes} participantes</Text>
     </View>
   );
 }

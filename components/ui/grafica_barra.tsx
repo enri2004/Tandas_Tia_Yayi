@@ -4,38 +4,49 @@ import { BarChart } from "react-native-chart-kit";
 
 const screenWidth = Dimensions.get("window").width;
 
-export default function GraficaBarras() {
-
-const data = {
-  labels: ["Ene", "Feb", "Mar", "Abr"],
-  datasets: [
-    {
-      data: [500, 800, 650, 900]
-    }
-  ]
+type Props = {
+  labels?: string[];
+  values?: number[];
 };
 
-return (
-<View>
+export default function GraficaBarras({
+  labels = ["Act", "Fin", "Pend", "Ok"],
+  values = [0, 0, 0, 0],
+}: Props) {
+  const data = {
+    labels,
+    datasets: [
+      {
+        data: values,
+      },
+    ],
+  };
 
-<BarChart
-  data={data}
-  width={screenWidth * 0.40}
-  height={100}
-  yAxisLabel="$"
-  yAxisSuffix=""
-  chartConfig={{
-    backgroundGradientFrom: "#ffffff",
-    backgroundGradientTo: "#ffffff",
-    decimalPlaces: 0,
-    color: (opacity = 1) => `rgba(0, 128, 0, ${opacity})`
-  }}
-  style={{
-    marginVertical: 10,
-    borderRadius: 10
-  }}
-/>
-
-</View>
-);
+  return (
+    <View>
+      <BarChart
+        data={data}
+        width={screenWidth * 0.4}
+        height={120}
+        fromZero
+        yAxisLabel=""
+        yAxisSuffix=""
+        chartConfig={{
+          backgroundGradientFrom: "#ffffff",
+          backgroundGradientTo: "#ffffff",
+          decimalPlaces: 0,
+          color: (opacity = 1) => `rgba(34, 197, 94, ${opacity})`,
+          labelColor: () => "#374151",
+          propsForBackgroundLines: {
+            stroke: "#e5e7eb",
+          },
+        }}
+        style={{
+          marginVertical: 10,
+          borderRadius: 10,
+        }}
+        showValuesOnTopOfBars
+      />
+    </View>
+  );
 }

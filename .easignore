@@ -1,0 +1,13 @@
+.expo/
+.git/
+.vscode/
+node_modules/
+android/.gradle/
+android/build/
+android/app/build/
+assets/_android_build_backup/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+coverage/

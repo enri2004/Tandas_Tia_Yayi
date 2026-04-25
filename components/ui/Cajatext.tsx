@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, Image, StyleSheet, ImageSourcePropType } from "react-native";
+import { View, Text, Image, StyleSheet, ImageSourcePropType, ViewStyle } from "react-native";
 import { Swipeable } from "react-native-gesture-handler";
 
 type Props = {
@@ -8,6 +8,7 @@ type Props = {
   imagen?: ImageSourcePropType;
   icono?: React.ReactNode;
   derecha?: React.ReactNode;
+  estiloExtra?: ViewStyle | ViewStyle[] | false;
 };
 
 export default function Cajatext({
@@ -15,12 +16,13 @@ export default function Cajatext({
   subtitulo,
   imagen,
   icono,
-  derecha
+  derecha,
+  estiloExtra,
 }: Props) {
 
   return (
     <Swipeable>
-      <View style={styles.tarjeta}>
+      <View style={[styles.tarjeta, estiloExtra]}>
 
         {/* IZQUIERDA */}
         {imagen && (

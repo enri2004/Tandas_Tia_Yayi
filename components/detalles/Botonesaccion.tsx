@@ -1,26 +1,44 @@
 // /components/detalles/BotonesAccion.tsx
-import React from "react";
-import { View, Pressable, Text, StyleSheet } from "react-native";
 import { router } from "expo-router";
+import React from "react";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 
-export default function BotonesAccion() {
+type Props = {
+  tandaId?: string;
+};
+
+export default function BotonesAccion({ tandaId }: Props) {
   return (
     <>
       <View style={styles.botones}>
-        <Pressable onPress={() => router.push("/src/screen/user/Turnos")} style={styles.boton}>
+        <Pressable
+          onPress={() =>
+            tandaId
+              ? router.push(`/screen/user/Turnos?id=${tandaId}`)
+              : router.push("/screen/user/Turnos")
+          }
+          style={styles.boton}
+        >
           <Text style={styles.textBtn}>Turnos</Text>
         </Pressable>
 
-        <Pressable onPress={() => router.push("/")} style={styles.boton}>
+        <Pressable
+          onPress={() =>
+            tandaId
+              ? router.push(`/screen/user/CalendarioTanda?id=${tandaId}`)
+              : null
+          }
+          style={styles.boton}
+        >
           <Text style={styles.textBtn}>Calendario</Text>
         </Pressable>
 
-        <Pressable onPress={() => router.push("/src/screen/user/historial")} style={styles.boton}>
+        <Pressable onPress={() => router.push("/screen/user/historial")} style={styles.boton}>
           <Text style={styles.textBtn}>Historial</Text>
         </Pressable>
       </View>
 
-      <Pressable style={styles.botonPago}>
+      <Pressable style={styles.botonPago} onPress={()=>router.push("/screen/user/RegistroPagosUser")}>
         <Text style={styles.textPago}>Realizar Pago</Text>
       </Pressable>
     </>

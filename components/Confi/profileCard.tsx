@@ -1,18 +1,42 @@
-import React from "react";
-import { View, Text, StyleSheet, Image } from "react-native";
+import React, { useMemo, useState } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  Image,
+  TouchableOpacity,
+  ImageSourcePropType,
+} from "react-native";
+import { Usuario } from "../../utils/api/amigos/amigosTypes";
 
-export default function ProfileCard() {
+type Props = {
+  perfil?: Partial<Usuario>;
+  onPress?: () => void;
+};
+
+export default function ProfileCard({ perfil, onPress }: Props) {
+  const [imageError, setImageError] = useState(false);
+
+  const avatarSource = useMemo<ImageSourcePropType>(() => {
+    if (!imageError && perfil?.imagen) {
+      return { uri: perfil.imagen };
+    }
+
+    return require("../../assets/images/icon.png");
+  }, [imageError, perfil?.imagen]);
+
   return (
-    <View style={styles.card}>
+    <TouchableOpacity style={styles.card} activeOpacity={0.85} onPress={onPress}>
       <Image
-        source={{ uri: "https://i.pravatar.cc/100" }}
+        source={avatarSource}
         style={styles.avatar}
+        onError={() => setImageError(true)}
       />
       <View>
-        <Text style={styles.name}>Enrique Cruz</Text>
-        <Text style={styles.email}>enrique.c@email.com</Text>
+        <Text style={styles.name}>{perfil?.nombre || "Mi perfil"}</Text>
+        <Text style={styles.email}>{perfil?.correo || "Sin correo"}</Text>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 }
 
