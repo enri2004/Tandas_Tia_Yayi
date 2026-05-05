@@ -101,6 +101,9 @@ export default function PerfilAdminScreen() {
         correo: actualizado.correo,
         usuario: actualizado.usuario,
         imagen: actualizado.imagen,
+        fotoPerfil: actualizado.fotoPerfil || actualizado.imagen,
+        perfilActualizado: actualizado.perfilActualizado,
+        mostrarModalActualizarDatos: actualizado.mostrarModalActualizarDatos,
       });
 
       Alert.alert("Exito", "Perfil del admin actualizado correctamente");
@@ -140,6 +143,9 @@ export default function PerfilAdminScreen() {
         correo: actualizado.correo,
         usuario: actualizado.usuario,
         imagen: actualizado.imagen,
+        fotoPerfil: actualizado.fotoPerfil || actualizado.imagen,
+        perfilActualizado: actualizado.perfilActualizado,
+        mostrarModalActualizarDatos: actualizado.mostrarModalActualizarDatos,
       });
       Alert.alert("Exito", "Foto del admin actualizada correctamente");
     } catch (error: any) {

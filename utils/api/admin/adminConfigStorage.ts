@@ -23,8 +23,17 @@ const DEFAULT_ADMIN_PREFERENCIAS: AdminPreferencias = {
 };
 
 const getKey = (adminId: string) => `admin-config:${adminId}:preferencias`;
+const isValidSecureStoreKey = (key?: string) =>
+  typeof key === "string" &&
+  key.length > 0 &&
+  /^[A-Za-z0-9._-]+$/.test(key);
 
 const setItem = async (key: string, value: string) => {
+  if (!isValidSecureStoreKey(key)) {
+    console.warn("[SecureStore] Key invalida omitida:", key);
+    return;
+  }
+
   if (Platform.OS === "web") {
     localStorage.setItem(key, value);
     return;
@@ -34,6 +43,11 @@ const setItem = async (key: string, value: string) => {
 };
 
 const getItem = async (key: string) => {
+  if (!isValidSecureStoreKey(key)) {
+    console.warn("[SecureStore] Key invalida omitida:", key);
+    return null;
+  }
+
   if (Platform.OS === "web") {
     return localStorage.getItem(key);
   }
@@ -44,6 +58,11 @@ const getItem = async (key: string) => {
 export const obtenerPreferenciasAdmin = async (
   adminId: string
 ): Promise<AdminPreferencias> => {
+  if (!adminId?.trim()) {
+    console.warn("[SecureStore] adminId invalido para preferencias admin");
+    return DEFAULT_ADMIN_PREFERENCIAS;
+  }
+
   const raw = await getItem(getKey(adminId));
 
   if (!raw) {
@@ -64,6 +83,11 @@ export const guardarPreferenciasAdmin = async (
   adminId: string,
   preferencias: AdminPreferencias
 ) => {
+  if (!adminId?.trim()) {
+    console.warn("[SecureStore] adminId invalido al guardar preferencias admin");
+    return preferencias;
+  }
+
   await setItem(getKey(adminId), JSON.stringify(preferencias));
   return preferencias;
 };

@@ -11,7 +11,14 @@ type Props = {
 };
 export default function ActionButton({ icon, text, color,onPress }: Props) {
   const { width, isTablet, isDesktop, bodySize } = useResponsive();
-  const itemWidth = isDesktop ? width * 0.12 : isTablet ? width * 0.18 : width * 0.22;
+  const canFitFourInline = width >= 360;
+  const itemWidth = isDesktop
+    ? width * 0.12
+    : isTablet
+    ? width * 0.18
+    : canFitFourInline
+    ? width * 0.22
+    : width * 0.42;
   const iconSize = isDesktop ? width * 0.065 : isTablet ? width * 0.11 : width * 0.15;
 
   return (
@@ -19,7 +26,12 @@ export default function ActionButton({ icon, text, color,onPress }: Props) {
       <View style={[styles.icon, { backgroundColor: color, width: iconSize, height: iconSize }]}>
         {icon}
       </View>
-      <Text style={[styles.text, { fontSize: bodySize }]}>{text}</Text>
+      <Text
+        style={[styles.text, { fontSize: bodySize }]}
+        numberOfLines={2}
+      >
+        {text}
+      </Text>
     </TouchableOpacity>
   );
 }
@@ -27,6 +39,7 @@ export default function ActionButton({ icon, text, color,onPress }: Props) {
 const styles = StyleSheet.create({
   action:{
     alignItems:"center",
+    justifyContent: "flex-start",
   },
   icon:{
     borderRadius:100,
@@ -35,6 +48,8 @@ const styles = StyleSheet.create({
   },
   text:{
     textAlign:"center",
-    marginTop:6
+    marginTop:6,
+    width: "100%",
+    minHeight: 32,
   }
 });

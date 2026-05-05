@@ -16,6 +16,10 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import useGoogleAuth from "@/hooks/Google";
+import useFacebookAuth from "@/hooks/Facebook";
+
+
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -76,6 +80,13 @@ export default function LoginScreen() {
     );
   };
 
+const { promptAsync, request } = useGoogleAuth((user:any) => {
+  router.replace("/User/(tabs)");
+});
+
+const { promptAsync: facebookLogin } = useFacebookAuth((user) => {
+  router.replace("/User/(tabs)");
+});
   return (
     <SafeAreaView style={styles.safe} edges={["top", "left", "right"]}>
       <KeyboardAvoidingView
@@ -148,8 +159,8 @@ export default function LoginScreen() {
                 />
 
                 <SocialAuthButtons
-                  onGoogle={() => manejarSocial("google")}
-                  onFacebook={() => manejarSocial("facebook")}
+                  onGoogle={() => promptAsync()}
+                    onFacebook={() => facebookLogin()}
                 />
 
                 <View style={styles.row}>

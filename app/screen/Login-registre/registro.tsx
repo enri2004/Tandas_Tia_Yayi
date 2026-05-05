@@ -101,10 +101,23 @@ export default function RegistroScreen() {
       tipoUsuario: "",
     };
 
+    const correoNormalizado = correo.trim().toLowerCase();
+    const formatoCorreo = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
     if (!nombre.trim()) nuevosErrores.nombre = "El nombre es obligatorio";
     if (!edad.trim()) nuevosErrores.edad = "La edad es obligatoria";
+    else if (Number.isNaN(Number(edad.trim()))) {
+      nuevosErrores.edad = "La edad debe ser un numero valido";
+    }
+
     if (!correo.trim()) nuevosErrores.correo = "El correo es obligatorio";
+    else if (!formatoCorreo.test(correoNormalizado)) {
+      nuevosErrores.correo = "Ingresa un correo valido";
+    }
     if (!usuario.trim()) nuevosErrores.usuario = "El usuario es obligatorio";
+    if (password.trim() && password.trim().length < 6) {
+      nuevosErrores.password = "La contrasena debe tener al menos 6 caracteres";
+    }
     if (!password.trim()) nuevosErrores.password = "La contraseña es obligatoria";
     if (!tipoUsuario) nuevosErrores.tipoUsuario = "Selecciona una opción";
 
@@ -128,6 +141,11 @@ export default function RegistroScreen() {
         onSuccess: () => {
           setModalTitulo("Registro exitoso");
           setModalTexto("Tu cuenta ha sido creada correctamente");
+          setModalVisible(true);
+        },
+        onError: (mensaje: string) => {
+          setModalTitulo("No se pudo registrar");
+          setModalTexto(mensaje);
           setModalVisible(true);
         },
       }
@@ -355,7 +373,11 @@ export default function RegistroScreen() {
           visible={modalVisible}
           titulo={modalTitulo}
           mensaje={modalTexto}
-          textoBoton="Ir al inicio"
+          textoBoton={
+            modalTitulo.toLowerCase().includes("registro exitoso")
+              ? "Ir al inicio"
+              : "Aceptar"
+          }
           onClose={() => {
             setModalVisible(false);
             if (modalTitulo.toLowerCase().includes("registro exitoso")) {

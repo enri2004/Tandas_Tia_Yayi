@@ -1,24 +1,27 @@
 import React from "react";
-import { View, Text, StyleSheet, Pressable, Image } from "react-native";
+import { View, Text, StyleSheet, Pressable } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { useResponsive } from "../../hooks/useResponsive";
+import UserAvatar from "../ui/UserAvatar";
 
 type Props = {
   adminName?: string;
   notificacionesSinLeer?: number;
+  fotoPerfil?: string;
 };
 
 export default function HeaderIndexAdmin({
   adminName = "Administrador",
   notificacionesSinLeer = 0,
+  fotoPerfil = "",
 }: Props) {
   const { titleSize, subtitleSize, isSmallPhone } = useResponsive();
 
   return (
     <View style={styles.container}>
       <View style={styles.infoContainer}>
-        <Image source={require("../../assets/images/icon.png")} style={styles.avatar} />
+        <UserAvatar uri={fotoPerfil} size={56} />
 
         <View style={styles.textBlock}>
           <Text style={[styles.title, { fontSize: titleSize }]}>Hola, {adminName}</Text>
@@ -59,11 +62,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 12,
     flex: 1,
-  },
-  avatar: {
-    width: 56,
-    height: 56,
-    borderRadius: 999,
   },
   textBlock: {
     flex: 1,

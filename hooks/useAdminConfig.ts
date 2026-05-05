@@ -32,7 +32,13 @@ export const useAdminConfig = () => {
         obtenerPreferenciasAdmin(sesion.id),
       ]);
 
-      setPerfil(perfilActual);
+      setPerfil({
+        ...perfilActual,
+        nombre: perfilActual?.nombre || sesion.nombre,
+        correo: perfilActual?.correo || sesion.correo,
+        imagen: perfilActual?.imagen || sesion.imagen,
+        fotoPerfil: perfilActual?.fotoPerfil || sesion.fotoPerfil || sesion.imagen,
+      });
       setPreferencias(preferenciasActuales);
     } finally {
       setLoading(false);

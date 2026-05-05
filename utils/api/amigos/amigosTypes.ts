@@ -12,9 +12,12 @@ export type Usuario = {
   tipoUsuario?: string;
   rol?: "admin" | "usuario";
   imagen?: string;
+  fotoPerfil?: string;
   telefono?: string;
   direccion?: string;
   ultimoAcceso?: string;
+  perfilActualizado?: boolean;
+  mostrarModalActualizarDatos?: boolean;
   totalAmigos?: number;
   totalSolicitudesEnviadas?: number;
   totalSolicitudesRecibidas?: number;

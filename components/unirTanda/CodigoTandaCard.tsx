@@ -5,15 +5,26 @@ import type { TandaItem } from "../../utils/api/Tandas/tandasTypes";
 type Props = {
   tanda: TandaItem;
   currentUserId?: string;
+  joined?: boolean;
   joining?: boolean;
   onJoin: (tandaId: string) => void;
 };
 
-export default function CodigoTandaCard({ tanda, currentUserId = "", joining = false, onJoin }: Props) {
+export default function CodigoTandaCard({
+  tanda,
+  currentUserId = "",
+  joined = false,
+  joining = false,
+  onJoin,
+}: Props) {
   const integrantes = Array.isArray(tanda.integrantes) ? tanda.integrantes : [];
-  const yaEsIntegrante = integrantes.some((integrante) =>
-    typeof integrante === "string" ? integrante === currentUserId : integrante?._id === currentUserId
-  );
+  const yaEsIntegrante =
+    joined ||
+    integrantes.some((integrante) =>
+      typeof integrante === "string"
+        ? integrante === currentUserId
+        : integrante?._id === currentUserId
+    );
   const lugaresDisponibles = Math.max((Number(tanda.participantes || 0) - integrantes.length), 0);
 
   return (
@@ -34,7 +45,13 @@ export default function CodigoTandaCard({ tanda, currentUserId = "", joining = f
         disabled={yaEsIntegrante || lugaresDisponibles === 0 || joining}
       >
         <Text style={styles.buttonText}>
-          {joining ? "Uniendo..." : yaEsIntegrante ? "Ya estas unido" : lugaresDisponibles === 0 ? "Sin cupo" : "Unirme a esta tanda"}
+          {joining
+            ? "Uniendo..."
+            : yaEsIntegrante
+            ? "Unido"
+            : lugaresDisponibles === 0
+            ? "Sin cupo"
+            : "Unirse"}
         </Text>
       </Pressable>
     </View>

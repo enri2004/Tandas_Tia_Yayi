@@ -3,9 +3,9 @@ import { ScrollView, Text, StyleSheet, TouchableOpacity, Alert } from "react-nat
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router, useFocusEffect } from "expo-router";
 
-import HeaderConfig from "../../../components/Confi/HeaderConfi";
 import ProfileCard from "../../../components/Confi/profileCard";
 import OptionItem from "../../../components/Confi/optionItem";
+import ScreenHeader from "../../../components/ui/ScreenHeader";
 import {
   cerrarSesion,
   obtenerUsuarioGuardado,
@@ -40,9 +40,12 @@ export default function ConfiguracionScreen() {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1 }}>
+    <SafeAreaView style={styles.safe} edges={["top", "left", "right"]}>
       <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-        <HeaderConfig />
+        <ScreenHeader
+          title="Configuracion"
+          subtitle="Ajusta tu cuenta y preferencias"
+        />
         <ProfileCard
           perfil={perfil || undefined}
           onPress={() => router.push("/screen/user/perfil")}
@@ -120,6 +123,10 @@ export default function ConfiguracionScreen() {
 }
 
 const styles = StyleSheet.create({
+  safe: {
+    flex: 1,
+    backgroundColor: "#F5F5F5",
+  },
   container: {
     flex: 1,
     backgroundColor: "#F5F5F5",

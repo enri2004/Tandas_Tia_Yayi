@@ -1,12 +1,14 @@
 import React from "react";
 import { View, Text, ScrollView, StyleSheet, RefreshControl } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
 
 import CardReporte from "../../../components/Reporteadmin/CardsRetporte";
 import Graficas from "../../../components/Reporteadmin/Graficas";
 import EstadoTandas from "../../../components/Reporteadmin/Estado";
 import Crecimiento from "../../../components/Reporteadmin/Crecimiento";
 import ActividadReciente from "../../../components/Reporteadmin/ActividadReciente";
+import ScreenHeader from "../../../components/ui/ScreenHeader";
 
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useAdminDashboard } from "../../../hooks/useAdminDashboard";
@@ -32,6 +34,7 @@ const formatearFecha = (fecha: string) => {
 };
 
 export default function ReporteScreen() {
+  const tabBarHeight = useBottomTabBarHeight();
   const { data, loading, error, recargar } = useAdminDashboard();
 
   const resumen = data?.resumen;
@@ -42,9 +45,15 @@ export default function ReporteScreen() {
     : 0;
 
   return (
-    <SafeAreaView style={styles.padre}>
-      <ScrollView refreshControl={<RefreshControl refreshing={loading} onRefresh={recargar} />}>
-        <Text style={styles.titulo}>Analisis Global de Tandas</Text>
+    <SafeAreaView style={styles.padre} edges={["top", "left", "right"]}>
+      <ScrollView
+        refreshControl={<RefreshControl refreshing={loading} onRefresh={recargar} />}
+        contentContainerStyle={{ paddingBottom: tabBarHeight + 10 }}
+      >
+        <ScreenHeader
+          title="Analisis Global de Tandas"
+          subtitle="Indicadores y actividad reciente del sistema"
+        />
 
         {error ? <Text style={styles.error}>{error}</Text> : null}
 
@@ -147,11 +156,6 @@ const styles = StyleSheet.create({
   padre: {
     flex: 1,
     backgroundColor: "#f2f2f2",
-  },
-  titulo: {
-    fontSize: 20,
-    fontWeight: "bold",
-    margin: 15,
   },
   grid: {
     flexDirection: "row",

@@ -1,21 +1,28 @@
 import { Ionicons } from "@expo/vector-icons";
+import { StatusBar } from "expo-status-bar";
 import { router, useFocusEffect } from "expo-router";
 import React, { useCallback, useMemo, useState } from "react";
 import {
   ActivityIndicator,
-  Image,
   ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
+import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import ActionButton from "../../../components/index/ActionButton";
 import CardsDashboard from "../../../components/index/cards";
 import TandasHomePanel from "../../../components/index/TandasHomePanel";
+import ModalMensaje from "../../../components/modal_alert/modal";
+import UserAvatar from "../../../components/ui/UserAvatar";
 import { useResponsive } from "../../../hooks/useResponsive";
-import { obtenerUsuarioGuardado } from "../../../utils/api/login-registrar/authStorage";
+import {
+  actualizarUsuarioGuardadoLocal,
+  obtenerUsuarioGuardado,
+} from "../../../utils/api/login-registrar/authStorage";
+import { guardarMiPerfil } from "../../../utils/api/amigos/amigosService";
 import { cargarResumenDashboard } from "../../../utils/api/Tandas/tandasService";
 import { DashboardResumenResponse } from "../../../utils/api/Tandas/tandasApi";
 
@@ -44,11 +51,13 @@ const formatearMoneda = (valor?: number | null) => {
 
 export default function DashboardScreen() {
   const insets = useSafeAreaInsets();
+  const tabBarHeight = useBottomTabBarHeight();
   const { horizontalPadding, titleSize, subtitleSize, bodySize, tandasPanelHeight, isTablet, isDesktop } =
     useResponsive();
   const [dashboard, setDashboard] = useState<DashboardState>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [modalPerfilVisible, setModalPerfilVisible] = useState(false);
 
   const cargarDatos = useCallback(async () => {
     setError("");
@@ -82,24 +91,77 @@ export default function DashboardScreen() {
   const usuarioNombre = dashboard?.usuario?.nombre?.split(" ")[0] || "Usuario";
   const notificacionesSinLeer = dashboard?.resumen?.notificacionesSinLeer || 0;
   const misTandas = dashboard?.misTandas || [];
+  const fotoPerfil =
+    dashboard?.usuario?.fotoPerfil || dashboard?.usuario?.imagen || "";
+
+  const revisarModalPerfil = useCallback(async () => {
+    const usuario = await obtenerUsuarioGuardado();
+
+    if (
+      usuario?.mostrarModalActualizarDatos &&
+      !usuario?.perfilActualizado
+    ) {
+      setModalPerfilVisible(true);
+    }
+  }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      revisarModalPerfil();
+    }, [revisarModalPerfil])
+  );
+
+  const omitirActualizacionPerfil = useCallback(async () => {
+    const usuario = await obtenerUsuarioGuardado();
+
+    if (!usuario?.id) {
+      setModalPerfilVisible(false);
+      return;
+    }
+
+    try {
+      await guardarMiPerfil(usuario.id, {
+        mostrarModalActualizarDatos: false,
+      });
+      await actualizarUsuarioGuardadoLocal({
+        mostrarModalActualizarDatos: false,
+      });
+    } catch (modalError) {
+      console.log("No se pudo actualizar la preferencia del modal", modalError);
+    } finally {
+      setModalPerfilVisible(false);
+    }
+  }, []);
+
+  const irActualizarPerfil = useCallback(async () => {
+    setModalPerfilVisible(false);
+    router.push("/screen/user/perfil");
+  }, []);
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={["left", "right"]}>
+    <SafeAreaView style={styles.safeArea} edges={["top", "left", "right"]}>
+      <StatusBar style="light" backgroundColor="#1e73d8" />
       <ScrollView
         style={styles.container}
         contentContainerStyle={{
           paddingTop: 8,
-          paddingBottom: 34 + Math.max(insets.bottom, 8),
+          paddingBottom: Math.max(tabBarHeight - insets.bottom, 18),
           paddingHorizontal: horizontalPadding,
         }}
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.header}>
           <View style={styles.headerContent}>
-            <Image
-              source={require("../../../assets/images/icon.png")}
-              style={[styles.imagen, { width: isDesktop ? 72 : isTablet ? 66 : 56, height: isDesktop ? 72 : isTablet ? 66 : 56 }]}
-            />
+            <TouchableOpacity
+              activeOpacity={0.85}
+              onPress={() => router.push("/screen/user/perfil")}
+              style={styles.avatarButton}
+            >
+              <UserAvatar
+                uri={fotoPerfil}
+                size={isDesktop ? 72 : isTablet ? 66 : 56}
+              />
+            </TouchableOpacity>
 
             <View style={styles.headerTextContainer}>
               <Text style={[styles.saludo, { fontSize: titleSize }]}>{`Hola, ${usuarioNombre}!`}</Text>
@@ -175,6 +237,16 @@ export default function DashboardScreen() {
           />
         </View>
       </ScrollView>
+
+      <ModalMensaje
+        visible={modalPerfilVisible}
+        titulo="Actualiza tus datos"
+        mensaje="Completa tu informacion de perfil para mejorar tu experiencia."
+        textoBoton="Actualizar datos"
+        textoBotonSecundario="Despues"
+        onClose={irActualizarPerfil}
+        onSecondaryAction={omitirActualizacionPerfil}
+      />
     </SafeAreaView>
   );
 }
@@ -209,6 +281,9 @@ const styles = StyleSheet.create({
   headerTextContainer: {
     flex: 1,
   },
+  avatarButton: {
+    borderRadius: 999,
+  },
   saludo: {
     fontWeight: "bold",
     color: "#fff",
@@ -218,9 +293,6 @@ const styles = StyleSheet.create({
     color: "#dbeafe",
     marginTop: 2,
     textTransform: "capitalize",
-  },
-  imagen: {
-    borderRadius: 999,
   },
   notificationButton: {
     width: 40,

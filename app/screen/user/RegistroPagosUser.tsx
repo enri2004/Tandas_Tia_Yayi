@@ -13,6 +13,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import Select from "../../../components/Pagos/Select";
 import MetodoPago from "../../../components/Pagos/MetodoPago";
 import UploadImage from "../../../components/Pagos/UploadImage";
+import ScreenHeader from "../../../components/ui/ScreenHeader";
 import { obtenerUsuarioGuardado } from "@/utils/api/login-registrar/authStorage";
 import { obtenerTandasPorUsuario } from "@/utils/api/Tandas/tandasApi";
 import { crearComprobante } from "@/utils/api/comprobantes/comprobantesApi";
@@ -167,90 +168,82 @@ export default function RegistroPagoScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.context}>
-        <Text style={styles.title}>Registrar Pago</Text>
-        <Text style={styles.subtitle}>Este flujo genera historial y notificacion automatica.</Text>
-      </View>
-
-      <Select
-        value={tandaSeleccionada?.nombre || "Seleccionar tanda"}
-        open={openSelect}
-        setOpen={setOpenSelect}
-        options={opcionesTanda}
-        onSelect={(item: string) => {
-          const tanda = tandas.find((current) => current.nombre === item) || null;
-          setTandaSeleccionada(tanda);
-          setOpenSelect(false);
-        }}
+    <SafeAreaView style={styles.safe} edges={["top", "left", "right"]}>
+      <ScreenHeader
+        title="Registrar Pago"
+        subtitle="Este flujo genera historial y notificacion automatica."
       />
 
-      <MetodoPago metodo={metodo} setMetodo={setMetodo} />
-
-      <ScrollView showsVerticalScrollIndicator={false}>
-        <TextInput
-          style={styles.input}
-          placeholder="Monto"
-          value={monto}
-          onChangeText={setMonto}
-          keyboardType="numeric"
+      <View style={styles.container}>
+        <Select
+          value={tandaSeleccionada?.nombre || "Seleccionar tanda"}
+          open={openSelect}
+          setOpen={setOpenSelect}
+          options={opcionesTanda}
+          onSelect={(item: string) => {
+            const tanda = tandas.find((current) => current.nombre === item) || null;
+            setTandaSeleccionada(tanda);
+            setOpenSelect(false);
+          }}
         />
 
-        {metodo === "transferencia" && (
-          <>
-            <TextInput style={styles.input} placeholder="Banco" value={banco} onChangeText={setBanco} />
-            <TextInput style={styles.input} placeholder="CLABE" value={clabe} onChangeText={setClabe} />
-            <TextInput
-              style={styles.input}
-              placeholder="Referencia"
-              value={referencia}
-              onChangeText={setReferencia}
-            />
-            <UploadImage imagen={imagen || undefined} onPress={seleccionarImagen} />
-          </>
-        )}
+        <MetodoPago metodo={metodo} setMetodo={setMetodo} />
 
-        {metodo === "presencial" && (
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingBottom: 24 }}
+        >
           <TextInput
             style={styles.input}
-            placeholder="Persona que recibio el pago"
-            value={persona}
-            onChangeText={setPersona}
+            placeholder="Monto"
+            value={monto}
+            onChangeText={setMonto}
+            keyboardType="numeric"
           />
-        )}
 
-        <Pressable style={styles.submitButton} onPress={enviarComprobante} disabled={loading}>
-          <Text style={styles.submitButtonText}>
-            {loading ? "Enviando..." : "Enviar comprobante"}
-          </Text>
-        </Pressable>
-      </ScrollView>
+          {metodo === "transferencia" && (
+            <>
+              <TextInput style={styles.input} placeholder="Banco" value={banco} onChangeText={setBanco} />
+              <TextInput style={styles.input} placeholder="CLABE" value={clabe} onChangeText={setClabe} />
+              <TextInput
+                style={styles.input}
+                placeholder="Referencia"
+                value={referencia}
+                onChangeText={setReferencia}
+              />
+              <UploadImage imagen={imagen || undefined} onPress={seleccionarImagen} />
+            </>
+          )}
+
+          {metodo === "presencial" && (
+            <TextInput
+              style={styles.input}
+              placeholder="Persona que recibio el pago"
+              value={persona}
+              onChangeText={setPersona}
+            />
+          )}
+
+          <Pressable style={styles.submitButton} onPress={enviarComprobante} disabled={loading}>
+            <Text style={styles.submitButtonText}>
+              {loading ? "Enviando..." : "Enviar comprobante"}
+            </Text>
+          </Pressable>
+        </ScrollView>
+      </View>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  safe: {
+    flex: 1,
+    backgroundColor: "#f5f6fa",
+  },
   container: {
     flex: 1,
     backgroundColor: "#f5f6fa",
     paddingHorizontal: 16,
-  },
-  context: {
-    backgroundColor: "#3b86f6",
-    borderBottomLeftRadius: 25,
-    borderBottomRightRadius: 25,
-    padding: 25,
-    marginHorizontal: -16,
-    marginBottom: 20,
-  },
-  title: {
-    color: "white",
-    fontSize: 22,
-    fontWeight: "bold",
-    paddingBottom: 8,
-  },
-  subtitle: {
-    color: "#dbeafe",
   },
   input: {
     backgroundColor: "#fff",

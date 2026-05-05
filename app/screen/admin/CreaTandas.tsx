@@ -10,6 +10,8 @@ import {
 } from "react-native";
 import { router } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
 import InputCard from "../../../components/CreatTandasAdmin/InputCrads";
 import FrecuenciaSelector from "../../../components/CreatTandasAdmin/FrecuenciasSelec";
 import FechaSelector from "../../../components/CreatTandasAdmin/FechaSelector";
@@ -18,9 +20,11 @@ import SelectorIntegrantes from "../../../components/CreatTandasAdmin/SelectorIn
 import OrdenTurnos from "../../../components/CreatTandasAdmin/OrdenTurnos";
 import SelectorImagenTanda from "../../../components/CreatTandasAdmin/SelectorImagenTanda";
 import ModalMensaje from "../../../components/modal_alert/modal";
+import ScreenHeader from "../../../components/ui/ScreenHeader";
 import { useCrearTandaAdmin } from "../../../hooks/useCrearTandaAdmin";
 
 export default function CrearTandaScreen() {
+  const tabBarHeight = useBottomTabBarHeight();
   const {
     admin,
     formulario,
@@ -87,120 +91,127 @@ export default function CrearTandaScreen() {
 
   if (cargandoInicial) {
     return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#22c55e" />
-        <Text style={styles.loadingText}>Cargando datos para crear la tanda...</Text>
-      </View>
+      <SafeAreaView style={styles.safe} edges={["top", "left", "right"]}>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#22c55e" />
+          <Text style={styles.loadingText}>Cargando datos para crear la tanda...</Text>
+        </View>
+      </SafeAreaView>
     );
   }
 
   return (
     <>
-      <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-        <Text style={styles.title}>CREAR NUEVA TANDA</Text>
-        <Text style={styles.subtitle}>
-          Configura los datos principales, elige integrantes y acomoda los turnos antes de guardar.
-        </Text>
+      <SafeAreaView style={styles.safe} edges={["top", "left", "right"]}>
+        <ScrollView
+          style={styles.container}
+          contentContainerStyle={[styles.content, { paddingBottom: tabBarHeight + 18 }]}
+        >
+          <ScreenHeader
+            title="Crear Nueva Tanda"
+            subtitle="Configura los datos principales y acomoda los turnos antes de guardar."
+          />
 
-        {admin ? (
-          <View style={styles.adminCard}>
-            <Text style={styles.adminLabel}>Administrador creador</Text>
-            <Text style={styles.adminName}>{admin.nombre}</Text>
-            <Text style={styles.adminMeta}>{admin.correo}</Text>
+          {admin ? (
+            <View style={styles.adminCard}>
+              <Text style={styles.adminLabel}>Administrador creador</Text>
+              <Text style={styles.adminName}>{admin.nombre}</Text>
+              <Text style={styles.adminMeta}>{admin.correo}</Text>
+            </View>
+          ) : null}
+
+          {errorCarga ? <Text style={styles.errorText}>{errorCarga}</Text> : null}
+
+          <InputCard
+            icon="hourglass-outline"
+            label="Nombre de la tanda"
+            value={formulario.nombre}
+            onChange={(value) => actualizarCampo("nombre", value)}
+            placeholder="Ej: Tanda amigos"
+          />
+
+          <InputCard
+            icon="cash-outline"
+            label="Monto por participante"
+            value={formulario.monto}
+            onChange={(value) => actualizarCampo("monto", value)}
+            placeholder="1000"
+            keyboardType="numeric"
+          />
+
+          <InputCard
+            icon="people-outline"
+            label="Numero de participantes"
+            value={formulario.participantes}
+            onChange={(value) => actualizarCampo("participantes", value)}
+            placeholder="10"
+            keyboardType="numeric"
+          />
+
+          <InputCard
+            icon="document-text-outline"
+            label="Descripcion"
+            value={formulario.descripcion}
+            onChange={(value) => actualizarCampo("descripcion", value)}
+            placeholder="Describe reglas o notas de la tanda"
+            multiline
+          />
+
+          <SelectorImagenTanda
+            imageUri={formulario.imagenUri}
+            onGaleria={seleccionarImagenGaleria}
+            onCamara={seleccionarImagenCamara}
+          />
+
+          <View style={styles.frequencyCard}>
+            <Text style={styles.sectionLabel}>Frecuencia</Text>
+            <FrecuenciaSelector
+              frecuencia={formulario.frecuencia}
+              setFrecuencia={(value) => actualizarCampo("frecuencia", value)}
+            />
+
+            <FechaSelector
+              fecha={formulario.fecha}
+              onChangeText={(value) => actualizarCampo("fecha", value)}
+            />
           </View>
-        ) : null}
 
-        {errorCarga ? <Text style={styles.errorText}>{errorCarga}</Text> : null}
-
-        <InputCard
-          icon="hourglass-outline"
-          label="Nombre de la tanda"
-          value={formulario.nombre}
-          onChange={(value) => actualizarCampo("nombre", value)}
-          placeholder="Ej: Tanda amigos"
-        />
-
-        <InputCard
-          icon="cash-outline"
-          label="Monto por participante"
-          value={formulario.monto}
-          onChange={(value) => actualizarCampo("monto", value)}
-          placeholder="1000"
-          keyboardType="numeric"
-        />
-
-        <InputCard
-          icon="people-outline"
-          label="Numero de participantes"
-          value={formulario.participantes}
-          onChange={(value) => actualizarCampo("participantes", value)}
-          placeholder="10"
-          keyboardType="numeric"
-        />
-
-        <InputCard
-          icon="document-text-outline"
-          label="Descripcion"
-          value={formulario.descripcion}
-          onChange={(value) => actualizarCampo("descripcion", value)}
-          placeholder="Describe reglas o notas de la tanda"
-          multiline
-        />
-
-        <SelectorImagenTanda
-          imageUri={formulario.imagenUri}
-          onGaleria={seleccionarImagenGaleria}
-          onCamara={seleccionarImagenCamara}
-        />
-
-        <View style={styles.frequencyCard}>
-          <Text style={styles.sectionLabel}>Frecuencia</Text>
-          <FrecuenciaSelector
-            frecuencia={formulario.frecuencia}
-            setFrecuencia={(value) => actualizarCampo("frecuencia", value)}
-          />
-
-          <FechaSelector
-            fecha={formulario.fecha}
-            onChangeText={(value) => actualizarCampo("fecha", value)}
-          />
-        </View>
-
-        <View style={styles.statusCard}>
-          <View style={styles.statusInfo}>
-            <Text style={styles.sectionLabel}>Estado inicial</Text>
-            <Text style={styles.statusDescription}>
-              Define si la tanda se crea activa desde el inicio.
-            </Text>
+          <View style={styles.statusCard}>
+            <View style={styles.statusInfo}>
+              <Text style={styles.sectionLabel}>Estado inicial</Text>
+              <Text style={styles.statusDescription}>
+                Define si la tanda se crea activa desde el inicio.
+              </Text>
+            </View>
+            <Switch
+              value={formulario.estado}
+              onValueChange={(value) => actualizarCampo("estado", value)}
+              trackColor={{ false: "#cbd5e1", true: "#86efac" }}
+              thumbColor={formulario.estado ? "#16a34a" : "#f8fafc"}
+            />
           </View>
-          <Switch
-            value={formulario.estado}
-            onValueChange={(value) => actualizarCampo("estado", value)}
-            trackColor={{ false: "#cbd5e1", true: "#86efac" }}
-            thumbColor={formulario.estado ? "#16a34a" : "#f8fafc"}
+
+          <SelectorIntegrantes
+            amigos={amigosDisponibles}
+            seleccionados={seleccionadosIds}
+            onToggle={toggleIntegrante}
+            creadorId={admin?.id || ""}
           />
-        </View>
 
-        <SelectorIntegrantes
-          amigos={amigosDisponibles}
-          seleccionados={seleccionadosIds}
-          onToggle={toggleIntegrante}
-          creadorId={admin?.id || ""}
-        />
+          <OrdenTurnos
+            integrantesOrdenados={integrantesOrdenados}
+            onMoveUp={moverArriba}
+            onMoveDown={moverAbajo}
+          />
 
-        <OrdenTurnos
-          integrantesOrdenados={integrantesOrdenados}
-          onMoveUp={moverArriba}
-          onMoveDown={moverAbajo}
-        />
+          <Text style={styles.helperText}>
+            El orden visible arriba sera el orden de turnos que se guardara para la tanda.
+          </Text>
 
-        <Text style={styles.helperText}>
-          El orden visible arriba sera el orden de turnos que se guardara para la tanda.
-        </Text>
-
-        <BotonCrear onPress={manejarCrearTanda} />
-        {guardando ? <Text style={styles.savingText}>Guardando tanda...</Text> : null}
-      </ScrollView>
+          <BotonCrear onPress={manejarCrearTanda} />
+          {guardando ? <Text style={styles.savingText}>Guardando tanda...</Text> : null}
+        </ScrollView>
+      </SafeAreaView>
 
       <ModalMensaje
         visible={modalExitoVisible}
@@ -217,6 +228,10 @@ export default function CrearTandaScreen() {
 }
 
 const styles = StyleSheet.create({
+  safe: {
+    flex: 1,
+    backgroundColor: "#f2f4f7",
+  },
   container: {
     flex: 1,
     backgroundColor: "#f2f4f7",
@@ -235,16 +250,6 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 12,
     color: "#4b5563",
-  },
-  title: {
-    color: "#000",
-    fontSize: 20,
-    fontWeight: "bold",
-    marginBottom: 8,
-  },
-  subtitle: {
-    color: "#6b7280",
-    marginBottom: 16,
   },
   adminCard: {
     backgroundColor: "#fff",

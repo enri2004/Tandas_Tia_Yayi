@@ -1,12 +1,13 @@
 import * as Notifications from "expo-notifications";
-import Constants from "expo-constants";
 import { Platform } from "react-native";
-import API from "@/servers/Axios";
+import API, { API_URL } from "@/servers/Axios";
 import {
   guardarExpoPushTokenLocal,
   obtenerExpoPushTokenLocal,
+  obtenerToken,
   obtenerUsuarioGuardado,
 } from "@/utils/api/login-registrar/authStorage";
+import { registerPushToken } from "@/utils/notifications/registerPushToken";
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -17,64 +18,18 @@ Notifications.setNotificationHandler({
   }),
 });
 
-const getProjectId = () =>
-  Constants.easConfig?.projectId ??
-  Constants.expoConfig?.extra?.eas?.projectId ??
-  "";
-
 export const registrarDispositivoParaPush = async () => {
-  if (Platform.OS === "web") {
-    return {
-      granted: false,
-      expoPushToken: "",
-      message: "Las push notifications no se registran en web.",
-    };
-  }
-
-  const { status: existingStatus } = await Notifications.getPermissionsAsync();
-  let finalStatus = existingStatus;
-
-  if (existingStatus !== "granted") {
-    const { status } = await Notifications.requestPermissionsAsync();
-    finalStatus = status;
-  }
-
-  if (finalStatus !== "granted") {
-    return {
-      granted: false,
-      expoPushToken: "",
-      message: `Permiso de notificaciones no concedido (${finalStatus}).`,
-    };
-  }
-
-  if (Platform.OS === "android") {
-    await Notifications.setNotificationChannelAsync("default", {
-      name: "default",
-      importance: Notifications.AndroidImportance.MAX,
-      vibrationPattern: [0, 250, 250, 250],
-      lightColor: "#3b82f6",
-    });
-  }
-
-  const projectId = getProjectId();
-  if (!projectId) {
-    console.warn("No se encontro projectId de Expo/EAS para generar ExpoPushToken.");
-    return {
-      granted: true,
-      expoPushToken: "",
-      message: "No se encontro projectId de Expo/EAS.",
-    };
-  }
-
-  const pushToken = await Notifications.getExpoPushTokenAsync({ projectId });
-  const expoPushToken = pushToken.data;
+  const expoPushToken = await registerPushToken();
 
   if (expoPushToken) {
     await guardarExpoPushTokenLocal(expoPushToken);
+    console.log("[Push] Expo Push Token guardado localmente");
+  } else {
+    console.log("[Push] No se obtuvo Expo Push Token para guardar localmente");
   }
 
   return {
-    granted: true,
+    granted: Boolean(expoPushToken),
     expoPushToken,
     message: expoPushToken
       ? `ExpoPushToken generado: ${expoPushToken}`
@@ -82,18 +37,49 @@ export const registrarDispositivoParaPush = async () => {
   };
 };
 
-export const sincronizarPushTokenConBackend = async () => {
-  const usuario = await obtenerUsuarioGuardado();
-  const expoPushToken = await obtenerExpoPushTokenLocal();
+export const guardarPushTokenEnBackend = async (expoPushToken: string, authToken?: string) => {
+  const token = authToken || (await obtenerToken());
+  console.log("[Push] JWT disponible para enviar token:", Boolean(token));
+  console.log("[Push] Backend URL usada:", API.defaults.baseURL || API_URL);
 
-  if (!usuario?.id || !expoPushToken) {
+  if (!token) {
+    console.log("[Push] No hay JWT disponible, se omite envio al backend");
+    return null;
+  }
+
+  const response = await API.post(
+    "/User/push-token",
+    { expoPushToken },
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  console.log("[Push] Respuesta backend al guardar token:", response.data);
+  return response.data;
+};
+
+export const sincronizarPushTokenConBackend = async (authToken?: string) => {
+  const usuario = await obtenerUsuarioGuardado();
+  console.log("[Push] Usuario en sesion para sincronizar:", usuario?.id || "SIN_SESION");
+
+  if (!usuario?.id) {
+    console.log("[Push] No existe sesion activa, no se enviara Expo Push Token");
     return false;
   }
 
-  await API.put(`/User/${usuario.id}/push-token`, {
-    expoPushToken,
-    platform: Platform.OS,
-  });
+  const expoPushToken = await obtenerExpoPushTokenLocal();
+  console.log("[Push] Expo Push Token local encontrado:", expoPushToken || "VACIO");
+
+  if (!expoPushToken) {
+    console.log("[Push] No hay Expo Push Token local para sincronizar");
+    return false;
+  }
+
+  const respuesta = await guardarPushTokenEnBackend(expoPushToken, authToken);
+  console.log("[Push] expoPushTokens reportado por backend:", respuesta?.expoPushTokens);
 
   return true;
 };

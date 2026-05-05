@@ -15,6 +15,7 @@ type Props = {
   loading?: boolean;
   joiningId?: string | null;
   currentUserId?: string;
+  joinedTandaIds?: string[];
   onJoin: (tandaId: string) => void;
 };
 
@@ -23,6 +24,7 @@ export default function ListaTandas({
   loading = false,
   joiningId = null,
   currentUserId = "",
+  joinedTandaIds = [],
   onJoin,
 }: Props) {
   if (loading) {
@@ -57,7 +59,9 @@ export default function ListaTandas({
             (item.participantes || 0) - totalIntegrantes,
             0
           );
-          const yaEsIntegrante = integrantes.some((integrante) =>
+          const yaEsIntegrante =
+            joinedTandaIds.includes(item._id) ||
+            integrantes.some((integrante) =>
             typeof integrante === "string"
               ? integrante === currentUserId
               : integrante?._id === currentUserId
@@ -112,7 +116,7 @@ export default function ListaTandas({
                     ? "Unido"
                     : lugaresDisponibles === 0
                     ? "Llena"
-                    : "Unirme"}
+                    : "Unirse"}
                 </Text>
               </Pressable>
             </View>

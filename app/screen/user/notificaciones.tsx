@@ -19,6 +19,7 @@ import {
   obtenerNotificacionesPorUsuario,
 } from "@/utils/api/notificaciones/notificacionesApi";
 import NotificacionRow from "../../../components/notificaciones/NotificacionRow";
+import ScreenHeader from "../../../components/ui/ScreenHeader";
 
 const formatearFecha = (fecha: string) => {
   try {
@@ -138,11 +139,12 @@ export default function Notificacion() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.titulo}>Notificaciones</Text>
-        <Text style={styles.subtitulo}>Actividad reciente guardada en tu cuenta</Text>
+      <ScreenHeader
+        title="Notificaciones"
+        subtitle="Actividad reciente guardada en tu cuenta"
+      />
 
-        <View style={styles.headerActions}>
+      <View style={styles.headerActions}>
           {modoSeleccion ? (
             <>
               <Text style={styles.selectionText}>{seleccionTexto}</Text>
@@ -167,7 +169,6 @@ export default function Notificacion() {
               <Text style={styles.botonHeaderText}>Marcar todas</Text>
             </Pressable>
           )}
-        </View>
       </View>
 
       <FlatList
@@ -210,23 +211,10 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#f5f6fa",
   },
-  header: {
-    backgroundColor: "#3b82f6",
-    padding: 25,
-    borderBottomLeftRadius: 25,
-    borderBottomRightRadius: 25,
-  },
-  titulo: {
-    fontSize: 22,
-    fontWeight: "bold",
-    color: "white",
-  },
-  subtitulo: {
-    color: "#dbeafe",
-    marginTop: 5,
-    marginBottom: 14,
-  },
   headerActions: {
+    paddingHorizontal: 18,
+    paddingTop: 12,
+    paddingBottom: 6,
     gap: 10,
   },
   botonHeader: {
@@ -251,7 +239,7 @@ const styles = StyleSheet.create({
     opacity: 0.7,
   },
   selectionText: {
-    color: "#eff6ff",
+    color: "#1d4ed8",
     fontWeight: "700",
   },
   emptyState: {

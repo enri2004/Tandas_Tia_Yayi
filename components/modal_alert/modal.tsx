@@ -6,7 +6,9 @@ type Props = {
   titulo: string;
   mensaje: string;
   textoBoton?: string;
+  textoBotonSecundario?: string;
   onClose: () => void;
+  onSecondaryAction?: () => void;
 };
 
 export default function ModalMensaje({
@@ -14,7 +16,9 @@ export default function ModalMensaje({
   titulo,
   mensaje,
   textoBoton = "Aceptar",
+  textoBotonSecundario,
   onClose,
+  onSecondaryAction,
 }: Props) {
   return (
     <Modal transparent visible={visible} animationType="fade">
@@ -23,9 +27,22 @@ export default function ModalMensaje({
           <Text style={styles.titulo}>{titulo}</Text>
           <Text style={styles.mensaje}>{mensaje}</Text>
 
-          <TouchableOpacity style={styles.boton} onPress={onClose}>
-            <Text style={styles.textoBoton}>{textoBoton}</Text>
-          </TouchableOpacity>
+          <View style={styles.actions}>
+            {textoBotonSecundario && onSecondaryAction ? (
+              <TouchableOpacity
+                style={[styles.boton, styles.botonSecundario]}
+                onPress={onSecondaryAction}
+              >
+                <Text style={[styles.textoBoton, styles.textoBotonSecundario]}>
+                  {textoBotonSecundario}
+                </Text>
+              </TouchableOpacity>
+            ) : null}
+
+            <TouchableOpacity style={styles.boton} onPress={onClose}>
+              <Text style={styles.textoBoton}>{textoBoton}</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </View>
     </Modal>
@@ -64,19 +81,31 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginBottom: 20,
   },
+  actions: {
+    width: "100%",
+    flexDirection: "row",
+    gap: 12,
+    justifyContent: "center",
+  },
 
   boton: {
+    flex: 1,
     backgroundColor: "#4285F4",
     borderRadius: 24,
     paddingVertical: 12,
     paddingHorizontal: 28,
-    minWidth: 120,
     alignItems: "center",
+  },
+  botonSecundario: {
+    backgroundColor: "#e8f0fe",
   },
 
   textoBoton: {
     color: "#fff",
     fontSize: 16,
     fontWeight: "700",
+  },
+  textoBotonSecundario: {
+    color: "#2563eb",
   },
 });

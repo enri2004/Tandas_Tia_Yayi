@@ -1,12 +1,7 @@
-import React, { useMemo, useState } from "react";
-import {
-  Image,
-  ImageSourcePropType,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import React from "react";
+import { StyleSheet, Text, View } from "react-native";
 import { Usuario } from "../../utils/api/amigos/amigosTypes";
+import UserAvatar from "../ui/UserAvatar";
 
 type Props = {
   perfil: Usuario;
@@ -14,23 +9,9 @@ type Props = {
 };
 
 export default function PerfilHeader({ perfil, subtitle }: Props) {
-  const [imageError, setImageError] = useState(false);
-
-  const avatarSource = useMemo<ImageSourcePropType>(() => {
-    if (!imageError && perfil?.imagen) {
-      return { uri: perfil.imagen };
-    }
-
-    return require("../../assets/images/icon.png");
-  }, [imageError, perfil?.imagen]);
-
   return (
     <View style={styles.card}>
-      <Image
-        source={avatarSource}
-        style={styles.avatar}
-        onError={() => setImageError(true)}
-      />
+      <UserAvatar uri={perfil?.fotoPerfil || perfil?.imagen} size={88} />
       <Text style={styles.nombre}>{perfil.nombre}</Text>
       <Text style={styles.usuario}>@{perfil.usuario}</Text>
       <Text style={styles.correo}>{perfil.correo}</Text>
@@ -47,13 +28,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 16,
     elevation: 2,
-  },
-  avatar: {
-    width: 88,
-    height: 88,
-    borderRadius: 44,
-    backgroundColor: "#e5e7eb",
-    marginBottom: 12,
   },
   nombre: {
     fontSize: 20,

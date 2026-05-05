@@ -3,9 +3,10 @@ import IconoEstado from "../../../components/ui/icono";
 import { obtenerUsuarioGuardado } from "@/utils/api/login-registrar/authStorage";
 import {
   HistorialItem,
+  obtenerHistorialPorTanda,
   obtenerHistorialPorUsuario,
 } from "@/utils/api/historial/historialApi";
-import { useFocusEffect } from "expo-router";
+import { useFocusEffect, useLocalSearchParams } from "expo-router";
 import React, { useCallback, useState } from "react";
 import {
   ActivityIndicator,
@@ -14,22 +15,31 @@ import {
   Text,
   View,
 } from "react-native";
+import ScreenHeader from "../../../components/ui/ScreenHeader";
 
 export default function Historial() {
+  const { tandaId } = useLocalSearchParams<{ tandaId?: string }>();
   const [data, setData] = useState<HistorialItem[]>([]);
   const [loading, setLoading] = useState(true);
 
   const cargarHistorial = useCallback(async () => {
     try {
       setLoading(true);
-      const usuario = await obtenerUsuarioGuardado();
+      let respuesta: HistorialItem[] = [];
 
-      if (!usuario?.id) {
-        setData([]);
-        return;
+      if (tandaId) {
+        respuesta = await obtenerHistorialPorTanda(String(tandaId));
+      } else {
+        const usuario = await obtenerUsuarioGuardado();
+
+        if (!usuario?.id) {
+          setData([]);
+          return;
+        }
+
+        respuesta = await obtenerHistorialPorUsuario(usuario.id);
       }
 
-      const respuesta = await obtenerHistorialPorUsuario(usuario.id);
       setData(Array.isArray(respuesta) ? respuesta : []);
     } catch (error) {
       console.log(error);
@@ -37,7 +47,7 @@ export default function Historial() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [tandaId]);
 
   useFocusEffect(
     useCallback(() => {
@@ -75,10 +85,10 @@ export default function Historial() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.titulo}>Historial</Text>
-        <Text style={styles.subtitulo}>Movimientos recientes</Text>
-      </View>
+      <ScreenHeader
+        title="Historial"
+        subtitle={tandaId ? "Movimientos de esta tanda" : "Movimientos recientes"}
+      />
 
       {loading ? (
         <View style={styles.center}>
@@ -126,21 +136,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#f5f6fa",
-  },
-  header: {
-    backgroundColor: "#3b82f6",
-    padding: 25,
-    borderBottomLeftRadius: 25,
-    borderBottomRightRadius: 25,
-  },
-  titulo: {
-    fontSize: 22,
-    fontWeight: "bold",
-    color: "white",
-  },
-  subtitulo: {
-    color: "#dbeafe",
-    marginTop: 5,
   },
   iconoBox: {
     width: 45,

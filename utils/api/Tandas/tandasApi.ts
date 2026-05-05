@@ -30,6 +30,7 @@ export type DashboardResumenResponse = {
     correo: string;
     usuario?: string;
     imagen?: string;
+    fotoPerfil?: string;
     rol: "admin" | "usuario";
     tipoUsuario?: string;
   };

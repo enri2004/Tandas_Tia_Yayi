@@ -1,6 +1,9 @@
-import { Alert } from "react-native";
 import { obtenerRolDesdeTipo, TipoUsuario } from "./conectUser";
 import { crearUsuario } from "./userapi";
+import {
+  registrarDispositivoParaPush,
+  sincronizarPushTokenConBackend,
+} from "@/utils/api/notificaciones/pushNotifications";
 import { prewarmApi } from "@/servers/Axios";
 
 type RegistroParams = {
@@ -16,6 +19,7 @@ type RegistroDeps = {
   setLoading: (value: boolean) => void;
   limpiarFormulario: () => void;
   onSuccess: () => void;
+  onError: (mensaje: string) => void;
 };
 
 export const registrarUsuario = async (
@@ -24,16 +28,16 @@ export const registrarUsuario = async (
 ) => {
   const { nombre, edad, correo, usuario, password, tipoUsuario } = datos;
 
-  const { setLoading, limpiarFormulario, onSuccess } = deps;
+  const { setLoading, limpiarFormulario, onSuccess, onError } = deps;
 
   try {
     if (!nombre || !edad || !correo || !usuario || !password) {
-      Alert.alert("Aviso", "Completa todos los campos");
+      onError("Completa todos los campos");
       return;
     }
 
     if (!tipoUsuario) {
-      Alert.alert("Aviso", "Selecciona una opcion");
+      onError("Selecciona una opcion");
       return;
     }
 
@@ -50,17 +54,29 @@ export const registrarUsuario = async (
       rol: obtenerRolDesdeTipo(tipoUsuario),
     });
 
-    Alert.alert("Exito", respuesta.mensaje || "Usuario registrado");
+    try {
+      await registrarDispositivoParaPush();
+
+      if (respuesta?.token) {
+        await sincronizarPushTokenConBackend(respuesta.token);
+      }
+    } catch (pushError) {
+      console.log(
+        "No se pudo sincronizar el token push despues del registro",
+        pushError
+      );
+    }
 
     limpiarFormulario();
     onSuccess();
   } catch (error: any) {
-    console.log(error);
+    console.log("Error al registrar usuario:", error?.response?.data || error);
     const mensaje =
       error?.response?.data?.mensaje ||
+      error?.response?.data?.detalle ||
       error?.message ||
       "No se pudo registrar";
-    Alert.alert("Error", mensaje);
+    onError(mensaje);
   } finally {
     setLoading(false);
   }

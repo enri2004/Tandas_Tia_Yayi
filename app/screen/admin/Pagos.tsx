@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { View, StyleSheet, FlatList, Text } from "react-native";
 import Pag from "../../../components/Pagos_admin/Pagos_admin";
+import ScreenHeader from "../../../components/ui/ScreenHeader";
 import { obtenerComprobantes } from "@/utils/api/comprobantes/comprobantesApi";
 
 type ComprobanteListItem = {
@@ -33,6 +34,11 @@ export default function Pagos() {
 
   return (
     <View style={styles.container}>
+      <ScreenHeader
+        title="Pagos"
+        subtitle="Revisa los comprobantes pendientes"
+      />
+
       <FlatList
         data={data}
         keyExtractor={(item) => item._id}
@@ -61,7 +67,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#f2f4f7",
-    paddingTop: 10,
   },
   emptyState: {
     marginTop: 60,

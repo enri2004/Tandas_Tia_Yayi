@@ -4,6 +4,7 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { ActivityIndicator, FlatList, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Cajatext from "../../../components/ui/Cajatext";
+import ScreenHeader from "../../../components/ui/ScreenHeader";
 import { obtenerTandaPorId } from "../../../utils/api/Tandas/tandasApi";
 import type { TandaItem, TurnoItem } from "../../../utils/api/Tandas/tandasTypes";
 import { obtenerUsuarioGuardado } from "../../../utils/api/login-registrar/authStorage";
@@ -75,15 +76,16 @@ export default function Turnos() {
   return (
     <SafeAreaView style={styles.safe}>
       <View style={styles.container}>
-        <View style={styles.header}>
-          <Text style={styles.titulo}>Orden de Turnos</Text>
-          <Text style={styles.subtitulo}>{tanda?.nombre || "Tanda activa"}</Text>
-          {miTurno ? (
-            <Text style={styles.miTurno}>
-              Tu turno es #{miTurno.orden} - {formatearFecha(miTurno.fechaProgramada)}
-            </Text>
-          ) : null}
-        </View>
+        <ScreenHeader
+          title="Orden de Turnos"
+          subtitle={tanda?.nombre || "Tanda activa"}
+          showBack
+        />
+        {miTurno ? (
+          <Text style={styles.miTurno}>
+            Tu turno es #{miTurno.orden} - {formatearFecha(miTurno.fechaProgramada)}
+          </Text>
+        ) : null}
 
         {loading ? (
           <View style={styles.center}>
@@ -152,24 +154,10 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#f5f6fa",
   },
-  header: {
-    backgroundColor: "#3b82f6",
-    padding: 25,
-    borderBottomLeftRadius: 25,
-    borderBottomRightRadius: 25,
-  },
-  titulo: {
-    fontSize: 22,
-    fontWeight: "bold",
-    color: "white",
-  },
-  subtitulo: {
-    color: "#dbeafe",
-    marginTop: 5,
-  },
   miTurno: {
-    marginTop: 10,
-    color: "#fff",
+    marginTop: 12,
+    marginHorizontal: 18,
+    color: "#1d4ed8",
     fontWeight: "700",
   },
   listContent: {

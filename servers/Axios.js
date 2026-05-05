@@ -1,7 +1,7 @@
 import Axios from "axios";
 import { obtenerToken } from "@/utils/api/login-registrar/authStorage";
 
-const API_URL =
+export const API_URL =
   process.env.EXPO_PUBLIC_API_URL?.trim() ||
   "https://tandas-tia-yayi-api.onrender.com";
 

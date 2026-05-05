@@ -1,6 +1,9 @@
 import { guardarSesion } from "./authStorage";
 import { loginUsuario } from "./userapi";
-import { sincronizarPushTokenConBackend } from "@/utils/api/notificaciones/pushNotifications";
+import {
+  registrarDispositivoParaPush,
+  sincronizarPushTokenConBackend,
+} from "@/utils/api/notificaciones/pushNotifications";
 import { prewarmApi } from "@/servers/Axios";
 
 type LoginParams = {
@@ -33,14 +36,17 @@ export const iniciarSesionUsuario = async (
     await prewarmApi().catch(() => null);
 
     const respuesta = await loginUsuario(correo.trim(), password);
+    console.log("[Push] Login exitoso, usuario:", respuesta?.usuario?.id);
 
     await guardarSesion({
       token: respuesta.token,
       usuario: respuesta.usuario,
     });
+    console.log("[Push] JWT guardado localmente:", Boolean(respuesta?.token));
 
     try {
-      await sincronizarPushTokenConBackend();
+      await registrarDispositivoParaPush();
+      await sincronizarPushTokenConBackend(respuesta.token);
     } catch (pushError) {
       console.log(
         "No se pudo sincronizar el token push despues del login",

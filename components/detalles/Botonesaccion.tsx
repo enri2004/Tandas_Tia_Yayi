@@ -26,14 +26,24 @@ export default function BotonesAccion({ tandaId }: Props) {
           onPress={() =>
             tandaId
               ? router.push(`/screen/user/CalendarioTanda?id=${tandaId}`)
-              : null
+              : router.push("/screen/user/CalendarioTanda")
           }
           style={styles.boton}
         >
           <Text style={styles.textBtn}>Calendario</Text>
         </Pressable>
 
-        <Pressable onPress={() => router.push("/screen/user/historial")} style={styles.boton}>
+        <Pressable
+          onPress={() =>
+            tandaId
+              ? router.push({
+                  pathname: "/screen/user/historial",
+                  params: { tandaId },
+                })
+              : router.push("/screen/user/historial")
+          }
+          style={styles.boton}
+        >
           <Text style={styles.textBtn}>Historial</Text>
         </Pressable>
       </View>

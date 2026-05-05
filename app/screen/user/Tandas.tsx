@@ -1,4 +1,5 @@
 import CajaInput from "@/components/ui/CajaInput";
+import ScreenHeader from "@/components/ui/ScreenHeader";
 import { obtenerUsuarioGuardado } from "@/utils/api/login-registrar/authStorage";
 import { obtenerTandasPorUsuario } from "@/utils/api/Tandas/tandasApi";
 import type { TandaItem } from "@/utils/api/Tandas/tandasTypes";
@@ -56,9 +57,10 @@ export default function Tanda() {
   return (
     <SafeAreaView style={styles.safe} edges={["top", "left", "right"]}>
       <View style={styles.container}>
-        <View style={styles.context}>
-          <Text style={styles.titulo}>Tandas</Text>
-        </View>
+        <ScreenHeader
+          title="Tandas"
+          subtitle="Consulta tus tandas activas y pendientes"
+        />
 
         {loading ? (
           <View style={styles.center}>
@@ -120,20 +122,6 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#f5f6fa",
   },
-
-  context: {
-    backgroundColor: "#3b86f6",
-    borderBottomLeftRadius: 25,
-    borderBottomRightRadius: 25,
-    padding: 25,
-  },
-
-  titulo: {
-    fontSize: 25,
-    fontWeight: "bold",
-    color: "white",
-  },
-
   center: {
     flex: 1,
     justifyContent: "center",

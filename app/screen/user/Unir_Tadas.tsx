@@ -15,8 +15,37 @@ export default function Unir_Tanda() {
   const [tandas, setTandas] = useState<TandaItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [joiningId, setJoiningId] = useState<string | null>(null);
+  const [joinedTandaIds, setJoinedTandaIds] = useState<string[]>([]);
   const [currentUserId, setCurrentUserId] = useState("");
   const [tandaInvitada, setTandaInvitada] = useState<TandaItem | null>(null);
+
+  const obtenerIntegrantes = useCallback((tanda: TandaItem) => {
+    return Array.isArray(tanda.integrantes) ? tanda.integrantes : [];
+  }, []);
+
+  const usuarioYaUnido = useCallback(
+    (tanda: TandaItem) => {
+      const integrantes = obtenerIntegrantes(tanda);
+
+      return integrantes.some((integrante) =>
+        typeof integrante === "string"
+          ? integrante === currentUserId
+          : integrante?._id === currentUserId
+      );
+    },
+    [currentUserId, obtenerIntegrantes]
+  );
+
+  const sincronizarTandasUnidas = useCallback(
+    (lista: TandaItem[]) => {
+      const idsUnidos = lista
+        .filter((item) => usuarioYaUnido(item))
+        .map((item) => item._id);
+
+      setJoinedTandaIds(idsUnidos);
+    },
+    [usuarioYaUnido]
+  );
 
   const cargarTandas = useCallback(async () => {
     try {
@@ -31,7 +60,9 @@ export default function Unir_Tanda() {
 
       setCurrentUserId(usuario.id);
       const respuesta = await obtenerTandas();
-      setTandas(Array.isArray(respuesta) ? respuesta : []);
+      const lista = Array.isArray(respuesta) ? respuesta : [];
+      setTandas(lista);
+      sincronizarTandasUnidas(lista);
     } catch (error) {
       console.log(error);
       Alert.alert("Error", "No se pudieron cargar las tandas");
@@ -44,6 +75,11 @@ export default function Unir_Tanda() {
     try {
       const respuesta = await obtenerTandaPorCodigo(codigo);
       setTandaInvitada(respuesta);
+      if (usuarioYaUnido(respuesta)) {
+        setJoinedTandaIds((actual) =>
+          actual.includes(respuesta._id) ? actual : [...actual, respuesta._id]
+        );
+      }
       setSearch(codigo);
     } catch (error: any) {
       setTandaInvitada(null);
@@ -64,7 +100,16 @@ export default function Unir_Tanda() {
     if (typeof params.codigo === "string" && params.codigo.trim()) {
       cargarTandaPorCodigo(params.codigo.trim());
     }
-  }, [cargarTandaPorCodigo, params.codigo]);
+  }, [cargarTandaPorCodigo, params.codigo, usuarioYaUnido]);
+
+  useEffect(() => {
+    if (!currentUserId) {
+      setJoinedTandaIds([]);
+      return;
+    }
+
+    sincronizarTandasUnidas(tandas);
+  }, [currentUserId, sincronizarTandasUnidas, tandas]);
 
   const tandasFiltradas = useMemo(() => {
     const termino = search.trim().toLowerCase();
@@ -105,10 +150,14 @@ export default function Unir_Tanda() {
         if (tandaInvitada?._id === tandaId) {
           setTandaInvitada(respuesta.tanda);
         }
+
+        setJoinedTandaIds((actual) =>
+          actual.includes(tandaId) ? actual : [...actual, tandaId]
+        );
       }
 
       Alert.alert(
-        "Exito",
+        respuesta?.yaUnido ? "Aviso" : "Exito",
         respuesta?.mensaje || "Te uniste a la tanda correctamente",
         [
           {
@@ -121,8 +170,6 @@ export default function Unir_Tanda() {
           },
         ]
       );
-
-      cargarTandas();
     } catch (error: any) {
       const mensaje =
         error?.response?.data?.mensaje ||
@@ -146,6 +193,7 @@ export default function Unir_Tanda() {
         <CodigoTandaCard
           tanda={tandaInvitada}
           currentUserId={currentUserId}
+          joined={joinedTandaIds.includes(tandaInvitada._id)}
           joining={joiningId === tandaInvitada._id}
           onJoin={handleJoin}
         />
@@ -157,6 +205,7 @@ export default function Unir_Tanda() {
           loading={loading}
           joiningId={joiningId}
           currentUserId={currentUserId}
+          joinedTandaIds={joinedTandaIds}
           onJoin={handleJoin}
         />
       </View>

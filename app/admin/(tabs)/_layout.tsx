@@ -8,8 +8,9 @@ import { useResponsive } from "../../../hooks/useResponsive";
 export default function Menu_Admin() {
   const insets = useSafeAreaInsets();
   const { isSmallPhone, compactLabelSize } = useResponsive();
-  const tabBarHeight = 66 + Math.max(insets.bottom, 10);
+  const tabBarHeight = (isSmallPhone ? 66 : 70) + Math.max(insets.bottom, 8);
   const iconSize = isSmallPhone ? 22 : 24;
+  const labelWidth = isSmallPhone ? 56 : 64;
 
   return (
     <Tabs
@@ -18,8 +19,8 @@ export default function Menu_Admin() {
         tabBarShowLabel: false,
         tabBarStyle: {
           height: tabBarHeight,
-          paddingBottom: Math.max(insets.bottom, 10),
-          paddingTop: 8,
+          paddingBottom: Math.max(insets.bottom, 8),
+          paddingTop: 6,
           backgroundColor: "white",
           borderTopWidth: 0,
         },
@@ -27,9 +28,9 @@ export default function Menu_Admin() {
           flex: 1,
           justifyContent: "center",
           alignItems: "center",
+          paddingHorizontal: 2,
         },
         sceneStyle: {
-          paddingBottom: Math.max(insets.bottom, 8),
           backgroundColor: "#f5f6fa",
         },
       }}
@@ -45,10 +46,13 @@ export default function Menu_Admin() {
                 size={iconSize}
               />
               <Text
+                numberOfLines={2}
                 style={{
                   color: focused ? "#59008c" : "gray",
                   fontSize: compactLabelSize,
                   marginTop: 4,
+                  width: labelWidth,
+                  textAlign: "center",
                 }}
               >
                 Home
@@ -69,10 +73,13 @@ export default function Menu_Admin() {
                 size={iconSize}
               />
               <Text
+                numberOfLines={2}
                 style={{
                   color: focused ? "#59008c" : "gray",
                   marginTop: 4,
                   fontSize: compactLabelSize,
+                  width: labelWidth,
+                  textAlign: "center",
                 }}
               >
                 Pagos
@@ -120,10 +127,13 @@ export default function Menu_Admin() {
                 size={iconSize}
               />
               <Text
+                numberOfLines={2}
                 style={{
                   color: focused ? "#59008c" : "gray",
                   marginTop: 4,
                   fontSize: compactLabelSize,
+                  width: labelWidth,
+                  textAlign: "center",
                 }}
               >
                 Reporte
@@ -144,10 +154,13 @@ export default function Menu_Admin() {
                 size={iconSize}
               />
               <Text
+                numberOfLines={2}
                 style={{
                   color: focused ? "#59008c" : "gray",
                   marginTop: 4,
                   fontSize: compactLabelSize,
+                  width: labelWidth,
+                  textAlign: "center",
                 }}
               >
                 Perfil

@@ -11,6 +11,7 @@ import { useLocalSearchParams } from "expo-router";
 import CalendarioPagos, {
   PagoCalendarioItem,
 } from "../../../components/detalles/CalendarioPagos";
+import ScreenHeader from "../../../components/ui/ScreenHeader";
 import { obtenerUsuarioGuardado } from "../../../utils/api/login-registrar/authStorage";
 import { obtenerTandaPorId } from "../../../utils/api/Tandas/tandasApi";
 import { IntegranteItem, TandaItem } from "../../../utils/api/Tandas/tandasTypes";
@@ -166,12 +167,11 @@ export default function CalendarioTandaScreen() {
   return (
     <SafeAreaView style={styles.safe}>
       <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-        <View style={styles.header}>
-          <Text style={styles.title}>Calendario de Pagos</Text>
-          <Text style={styles.subtitle}>
-            {tanda?.nombre || "Tanda"} - revisa tus fechas de pago programadas
-          </Text>
-        </View>
+        <ScreenHeader
+          title="Calendario de Pagos"
+          subtitle={`${tanda?.nombre || "Tanda"} - revisa tus fechas de pago programadas`}
+          showBack
+        />
 
         <CalendarioPagos items={calendario} />
       </ScrollView>
@@ -194,20 +194,5 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: "#f5f6fa",
-  },
-  header: {
-    backgroundColor: "#3b82f6",
-    padding: 22,
-    borderRadius: 24,
-    marginBottom: 16,
-  },
-  title: {
-    fontSize: 22,
-    fontWeight: "700",
-    color: "#fff",
-  },
-  subtitle: {
-    color: "#dbeafe",
-    marginTop: 4,
   },
 });

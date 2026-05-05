@@ -9,6 +9,9 @@ type UsuarioGuardado = {
   rol: "admin" | "usuario";
   tipoUsuario?: string;
   imagen?: string;
+  fotoPerfil?: string;
+  perfilActualizado?: boolean;
+  mostrarModalActualizarDatos?: boolean;
 };
 
 export const guardarSesion = async (data: {

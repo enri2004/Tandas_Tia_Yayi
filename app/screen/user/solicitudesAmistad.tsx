@@ -9,6 +9,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useFocusEffect } from "expo-router";
 import CardSolicitud from "../../../components/amigos/CardSolicitud";
+import ScreenHeader from "../../../components/ui/ScreenHeader";
 import { SolicitudAmistad } from "../../../utils/api/amigos/amigosTypes";
 import {
   aceptarSolicitudPendiente,
@@ -81,7 +82,11 @@ export default function SolicitudesAmistadScreen() {
   return (
     <SafeAreaView style={styles.safe}>
       <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-        <Text style={styles.title}>Solicitudes de amistad</Text>
+        <ScreenHeader
+          title="Solicitudes de amistad"
+          subtitle="Gestiona las solicitudes pendientes"
+          showBack
+        />
 
         {loading ? (
           <ActivityIndicator size="large" color="#2563eb" />
@@ -111,12 +116,6 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#f5f6fa",
     padding: 16,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: "700",
-    color: "#111827",
-    marginBottom: 16,
   },
   emptyText: {
     textAlign: "center",

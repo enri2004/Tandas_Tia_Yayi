@@ -67,6 +67,7 @@ export type AdminDashboardResponse = {
     correo: string;
     usuario?: string;
     imagen?: string;
+    fotoPerfil?: string;
     rol: string;
     tipoUsuario?: string;
   };
