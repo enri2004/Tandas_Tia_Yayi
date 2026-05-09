@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import ScreenSafeArea from "@/components/layout/ScreenSafeArea";
 import { View, StyleSheet, FlatList, Text } from "react-native";
 import Pag from "../../../components/Pagos_admin/Pagos_admin";
 import ScreenHeader from "../../../components/ui/ScreenHeader";
@@ -33,33 +34,35 @@ export default function Pagos() {
   }, []);
 
   return (
-    <View style={styles.container}>
-      <ScreenHeader
-        title="Pagos"
-        subtitle="Revisa los comprobantes pendientes"
-      />
+    <ScreenSafeArea hasBlueHeader backgroundColor="#f2f4f7">
+      <View style={styles.container}>
+        <ScreenHeader
+          title="Pagos"
+          subtitle="Revisa los comprobantes pendientes"
+        />
 
-      <FlatList
-        data={data}
-        keyExtractor={(item) => item._id}
-        showsVerticalScrollIndicator={false}
-        ListEmptyComponent={
-          <View style={styles.emptyState}>
-            <Text style={styles.emptyTitle}>No hay comprobantes pendientes</Text>
-            <Text style={styles.emptyText}>Los nuevos envios apareceran aqui para revision.</Text>
-          </View>
-        }
-        renderItem={({ item }) => (
-          <Pag
-            id={item._id}
-            nombre={item.usuario?.nombre || "Usuario"}
-            tandas={item.tanda?.nombre || "Sin tanda"}
-            pago={`$${item.monto || 0}`}
-            pendiente={item.estado}
-          />
-        )}
-      />
-    </View>
+        <FlatList
+          data={data}
+          keyExtractor={(item) => item._id}
+          showsVerticalScrollIndicator={false}
+          ListEmptyComponent={
+            <View style={styles.emptyState}>
+              <Text style={styles.emptyTitle}>No hay comprobantes pendientes</Text>
+              <Text style={styles.emptyText}>Los nuevos envios apareceran aqui para revision.</Text>
+            </View>
+          }
+          renderItem={({ item }) => (
+            <Pag
+              id={item._id}
+              nombre={item.usuario?.nombre || "Usuario"}
+              tandas={item.tanda?.nombre || "Sin tanda"}
+              pago={`$${item.monto || 0}`}
+              pendiente={item.estado}
+            />
+          )}
+        />
+      </View>
+    </ScreenSafeArea>
   );
 }
 

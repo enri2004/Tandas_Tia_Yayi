@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import ScreenSafeArea from "@/components/layout/ScreenSafeArea";
 import {
   ActivityIndicator,
   Alert,
@@ -10,7 +11,6 @@ import {
 } from "react-native";
 import { router } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
 import InputCard from "../../../components/CreatTandasAdmin/InputCrads";
 import FrecuenciaSelector from "../../../components/CreatTandasAdmin/FrecuenciasSelec";
@@ -91,18 +91,18 @@ export default function CrearTandaScreen() {
 
   if (cargandoInicial) {
     return (
-      <SafeAreaView style={styles.safe} edges={["top", "left", "right"]}>
+      <ScreenSafeArea backgroundColor="#f2f4f7">
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#22c55e" />
           <Text style={styles.loadingText}>Cargando datos para crear la tanda...</Text>
         </View>
-      </SafeAreaView>
+      </ScreenSafeArea>
     );
   }
 
   return (
     <>
-      <SafeAreaView style={styles.safe} edges={["top", "left", "right"]}>
+      <ScreenSafeArea hasBlueHeader backgroundColor="#f2f4f7">
         <ScrollView
           style={styles.container}
           contentContainerStyle={[styles.content, { paddingBottom: tabBarHeight + 18 }]}
@@ -244,7 +244,7 @@ export default function CrearTandaScreen() {
           <BotonCrear onPress={manejarCrearTanda} />
           {guardando ? <Text style={styles.savingText}>Guardando tanda...</Text> : null}
         </ScrollView>
-      </SafeAreaView>
+      </ScreenSafeArea>
 
       <ModalMensaje
         visible={modalExitoVisible}

@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
+import ScreenSafeArea from "@/components/layout/ScreenSafeArea";
 import {
   ActivityIndicator,
   ScrollView,
@@ -6,7 +7,6 @@ import {
   Text,
   View,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams } from "expo-router";
 import CalendarioPagos, {
   PagoCalendarioItem,
@@ -158,14 +158,14 @@ export default function CalendarioTandaScreen() {
 
   if (loading) {
     return (
-      <SafeAreaView style={styles.center}>
+      <ScreenSafeArea backgroundColor="#f5f6fa">
         <ActivityIndicator size="large" color="#3b82f6" />
-      </SafeAreaView>
+      </ScreenSafeArea>
     );
   }
 
   return (
-    <SafeAreaView style={styles.safe}>
+    <ScreenSafeArea hasBlueHeader backgroundColor="#f5f6fa">
       <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
         <ScreenHeader
           title="Calendario de Pagos"
@@ -175,7 +175,7 @@ export default function CalendarioTandaScreen() {
 
         <CalendarioPagos items={calendario} />
       </ScrollView>
-    </SafeAreaView>
+    </ScreenSafeArea>
   );
 }
 

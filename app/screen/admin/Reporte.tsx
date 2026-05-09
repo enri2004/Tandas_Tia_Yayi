@@ -1,6 +1,6 @@
 import React from "react";
+import ScreenSafeArea from "@/components/layout/ScreenSafeArea";
 import { View, Text, ScrollView, StyleSheet, RefreshControl } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
 
 import CardReporte from "../../../components/Reporteadmin/CardsRetporte";
@@ -45,7 +45,7 @@ export default function ReporteScreen() {
     : 0;
 
   return (
-    <SafeAreaView style={styles.padre} edges={["top", "left", "right"]}>
+    <ScreenSafeArea hasBlueHeader backgroundColor="#f2f2f2">
       <ScrollView
         refreshControl={<RefreshControl refreshing={loading} onRefresh={recargar} />}
         contentContainerStyle={{ paddingBottom: tabBarHeight + 10 }}
@@ -148,7 +148,7 @@ export default function ReporteScreen() {
           fecha={actividad?.createdAt ? formatearFecha(actividad.createdAt) : ""}
         />
       </ScrollView>
-    </SafeAreaView>
+    </ScreenSafeArea>
   );
 }
 

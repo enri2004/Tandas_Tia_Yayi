@@ -1,4 +1,5 @@
 import CajaInput from "@/components/ui/CajaInput";
+import ScreenSafeArea from "@/components/layout/ScreenSafeArea";
 import ScreenHeader from "@/components/ui/ScreenHeader";
 import { obtenerUsuarioGuardado } from "@/utils/api/login-registrar/authStorage";
 import { obtenerTandasPorUsuario } from "@/utils/api/Tandas/tandasApi";
@@ -13,7 +14,6 @@ import {
   Text,
   View,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function Tanda() {
   const [data, setData] = useState<TandaItem[]>([]);
@@ -55,7 +55,7 @@ export default function Tanda() {
   );
 
   return (
-    <SafeAreaView style={styles.safe} edges={["top", "left", "right"]}>
+    <ScreenSafeArea hasBlueHeader backgroundColor="#f5f6fa">
       <View style={styles.container}>
         <ScreenHeader
           title="Tandas"
@@ -108,7 +108,7 @@ export default function Tanda() {
           />
         )}
       </View>
-    </SafeAreaView>
+    </ScreenSafeArea>
   );
 }
 

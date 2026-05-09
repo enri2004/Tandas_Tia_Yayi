@@ -1,9 +1,5 @@
 import { obtenerRolDesdeTipo, TipoUsuario } from "./conectUser";
 import { crearUsuario } from "./userapi";
-import {
-  registrarDispositivoParaPush,
-  sincronizarPushTokenConBackend,
-} from "@/utils/api/notificaciones/pushNotifications";
 import { prewarmApi } from "@/servers/Axios";
 
 type RegistroParams = {
@@ -53,19 +49,6 @@ export const registrarUsuario = async (
       tipoUsuario,
       rol: obtenerRolDesdeTipo(tipoUsuario),
     });
-
-    try {
-      await registrarDispositivoParaPush();
-
-      if (respuesta?.token) {
-        await sincronizarPushTokenConBackend(respuesta.token);
-      }
-    } catch (pushError) {
-      console.log(
-        "No se pudo sincronizar el token push despues del registro",
-        pushError
-      );
-    }
 
     limpiarFormulario();
     onSuccess(respuesta);

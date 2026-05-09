@@ -3,9 +3,9 @@ import Hader from "../../../components/indexadmin/HarderIndexadmin";
 import CardResumen from "../../../components/indexadmin/CardsAdmin";
 import TandasAdminPanel from "../../../components/indexadmin/TandasAdminPanel";
 import ModalMensaje from "../../../components/modal_alert/modal";
-import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
-import { StatusBar } from "expo-status-bar";
+import ScreenSafeArea from "@/components/layout/ScreenSafeArea";
 import { useAdminDashboard } from "../../../hooks/useAdminDashboard";
 import { useResponsive } from "../../../hooks/useResponsive";
 import { router, useFocusEffect } from "expo-router";
@@ -68,8 +68,7 @@ export default function AdminDashboard() {
   }, []);
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={["top", "left", "right"]}>
-      <StatusBar style="light" backgroundColor="#1e73d8" />
+    <ScreenSafeArea hasBlueHeader backgroundColor="#f5f6fa">
       <ScrollView
         style={styles.container}
         refreshControl={<RefreshControl refreshing={loading} onRefresh={recargar} />}
@@ -111,7 +110,7 @@ export default function AdminDashboard() {
         onClose={irActualizarPerfil}
         onSecondaryAction={omitirActualizacionPerfil}
       />
-    </SafeAreaView>
+    </ScreenSafeArea>
   );
 }
 

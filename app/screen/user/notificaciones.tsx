@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
+import ScreenSafeArea from "@/components/layout/ScreenSafeArea";
 import {
   Alert,
   FlatList,
@@ -8,7 +9,6 @@ import {
   Text,
   View,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { obtenerUsuarioGuardado } from "@/utils/api/login-registrar/authStorage";
 import {
   eliminarNotificacion,
@@ -138,7 +138,7 @@ export default function Notificacion() {
   }, [seleccionadas.length]);
 
   return (
-    <SafeAreaView style={styles.container}>
+    <ScreenSafeArea hasBlueHeader backgroundColor="#f5f6fa">
       <ScreenHeader
         title="Notificaciones"
         subtitle="Actividad reciente guardada en tu cuenta"
@@ -202,7 +202,7 @@ export default function Notificacion() {
           />
         )}
       />
-    </SafeAreaView>
+    </ScreenSafeArea>
   );
 }
 

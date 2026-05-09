@@ -1,5 +1,6 @@
 ﻿import ModalMensaje from "@/components/modal_alert/modal";
 import SocialAuthButtons from "@/components/login/SocialAuthButtons";
+import ScreenSafeArea from "@/components/layout/ScreenSafeArea";
 import Botones from "@/components/ui/bontones";
 import Input from "@/components/ui/Input";
 import { useAuth } from "@/contexts/AuthContext";
@@ -28,7 +29,7 @@ import {
   useWindowDimensions,
   View,
 } from "react-native";
-import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 type UsuarioAutenticado = {
   id: string;
@@ -46,6 +47,7 @@ export default function LoginScreen() {
 
   const [correo, setCorreo] = useState("");
   const [password, setPassword] = useState("");
+  const [focusedInput, setFocusedInput] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [socialLoading, setSocialLoading] = useState<SocialProvider | null>(null);
 
@@ -75,6 +77,10 @@ export default function LoginScreen() {
     setModalTitulo(titulo);
     setModalMensaje(mensaje);
     setModalVisible(true);
+  };
+
+  const handleFocusInput = (name?: string) => {
+    setFocusedInput(name ?? null);
   };
 
   const resolverPostLogin = async (usuario: UsuarioAutenticado) => {
@@ -228,7 +234,7 @@ export default function LoginScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.safe} edges={["top", "left", "right"]}>
+    <ScreenSafeArea hasBlueHeader backgroundColor="#f2f2f2">
       <KeyboardAvoidingView
         style={styles.safe}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -270,28 +276,34 @@ export default function LoginScreen() {
               ]}
             >
               <View style={[styles.formCard, { width: cardWidth }]}>
-                <View style={styles.input}>
-                  <Input
-                    label="Correo o usuario"
-                    placeholder="tu@correo.com"
-                    value={correo}
-                    onChange={setCorreo}
-                    autoCapitalize="none"
-                    keyboardType="email-address"
-                    icon="mail-outline"
-                  />
-                </View>
+                <Input
+                  name="correo"
+                  focusedName={focusedInput}
+                  onFocusInput={handleFocusInput}
+                  onBlurInput={() => setFocusedInput(null)}
+                  label="Correo o usuario"
+                  placeholder="usuario o correo.com"
+                  value={correo}
+                  onChange={setCorreo}
+                  autoCapitalize="none"
+                  keyboardType="email-address"
+                  icon="mail-outline"
+                  containerStyle={styles.input}
+                />
 
-                <View style={styles.input}>
-                  <Input
-                    label="Contraseña"
-                    placeholder="Escribe tu contraseña"
-                    value={password}
-                    onChange={setPassword}
-                    secureTextEntry
-                    icon="lock-closed-outline"
-                  />
-                </View>
+                <Input
+                  name="password"
+                  focusedName={focusedInput}
+                  onFocusInput={handleFocusInput}
+                  onBlurInput={() => setFocusedInput(null)}
+                  label="Contraseña"
+                  placeholder="Escribe tu contraseña"
+                  value={password}
+                  onChange={setPassword}
+                  secureTextEntry
+                  icon="lock-closed-outline"
+                  containerStyle={styles.input}
+                />
 
                 <Botones
                   nombre={loading ? "Cargando..." : "Iniciar sesión"}
@@ -364,7 +376,7 @@ export default function LoginScreen() {
           </View>
         </View>
       </Modal>
-    </SafeAreaView>
+    </ScreenSafeArea>
   );
 }
 
@@ -528,8 +540,6 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
 });
-
-
 
 
 

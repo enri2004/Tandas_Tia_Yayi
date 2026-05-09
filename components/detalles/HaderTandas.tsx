@@ -31,7 +31,7 @@ export default function HeaderTanda({ Titulo, Participantes }: Props) {
 const styles = StyleSheet.create({
   header: {
     width: "100%",
-    backgroundColor: "#3b82f6",
+    backgroundColor: "#1e73d8",
     borderRadius: 0,
     borderBottomLeftRadius: 28,
     borderBottomRightRadius: 28,

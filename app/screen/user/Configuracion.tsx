@@ -1,6 +1,6 @@
 import React, { useCallback, useState } from "react";
+import ScreenSafeArea from "@/components/layout/ScreenSafeArea";
 import { ScrollView, Text, StyleSheet, TouchableOpacity, Alert } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { router, useFocusEffect } from "expo-router";
 
 import ProfileCard from "../../../components/Confi/profileCard";
@@ -38,7 +38,7 @@ export default function ConfiguracionScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.safe} edges={["top", "left", "right"]}>
+    <ScreenSafeArea hasBlueHeader backgroundColor="#F5F5F5">
       <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
         <ScreenHeader
           title="Configuración"
@@ -116,7 +116,7 @@ export default function ConfiguracionScreen() {
           <Text style={styles.logoutText}>Cerrar sesión</Text>
         </TouchableOpacity>
       </ScrollView>
-    </SafeAreaView>
+    </ScreenSafeArea>
   );
 }
 

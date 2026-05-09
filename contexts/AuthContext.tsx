@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { router, useSegments } from "expo-router";
+import { Alert } from "react-native";
 import {
   cerrarSesion as borrarSesionLocal,
   guardarSesion,
@@ -7,6 +8,10 @@ import {
   obtenerUsuarioGuardado,
   type UsuarioGuardado,
 } from "@/utils/api/login-registrar/authStorage";
+import {
+  registrarDispositivoParaPush,
+  sincronizarPushTokenConBackend,
+} from "@/utils/api/notificaciones/pushNotifications";
 import { obtenerUsuarioActual } from "@/utils/api/login-registrar/userapi";
 
 type SessionPayload = {
@@ -47,10 +52,39 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [token, setToken] = useState<string | null>(null);
   const [isHydrating, setIsHydrating] = useState(true);
 
+  const sincronizarPushPostLogin = async (payload: SessionPayload) => {
+    if (!payload?.token) {
+      console.log("[Push] No hay JWT despues del login, se omite sincronizacion");
+      return;
+    }
+
+    try {
+      console.log(
+        "[Push] Iniciando sincronizacion post-login para usuario:",
+        payload.usuario?.id || "SIN_USUARIO"
+      );
+
+      const registro = await registrarDispositivoParaPush();
+      console.log("[Push] Resultado registro local:", registro);
+
+      if (!registro.granted || !registro.expoPushToken) {
+        if (registro.shouldWarnUser) {
+          Alert.alert("Notificaciones desactivadas", registro.message);
+        }
+        return;
+      }
+
+      await sincronizarPushTokenConBackend(payload.token, registro.expoPushToken);
+    } catch (error) {
+      console.log("[Push] No se pudo registrar o sincronizar el token despues del login", error);
+    }
+  };
+
   const signIn = async (payload: SessionPayload) => {
     await guardarSesion(payload);
     setToken(payload.token);
     setUsuario(payload.usuario);
+    await sincronizarPushPostLogin(payload);
   };
 
   const updateUser = async (nuevoUsuario: UsuarioGuardado) => {

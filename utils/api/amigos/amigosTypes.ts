@@ -13,6 +13,7 @@ export type Usuario = {
   rol?: "admin" | "usuario";
   imagen?: string;
   fotoPerfil?: string;
+  avatar?: string;
   telefono?: string;
   direccion?: string;
   ultimoAcceso?: string;

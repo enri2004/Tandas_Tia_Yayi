@@ -10,6 +10,7 @@ export type UsuarioGuardado = {
   tipoUsuario?: string;
   imagen?: string;
   fotoPerfil?: string;
+  avatar?: string;
   edad?: number | null;
   telefono?: string;
   direccion?: string;

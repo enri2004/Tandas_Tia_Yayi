@@ -1,4 +1,5 @@
 import React, { useCallback, useState } from "react";
+import ScreenSafeArea from "@/components/layout/ScreenSafeArea";
 import {
   ActivityIndicator,
   Alert,
@@ -6,7 +7,6 @@ import {
   StyleSheet,
   Text,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { useFocusEffect } from "expo-router";
 import CardSolicitud from "../../../components/amigos/CardSolicitud";
 import ScreenHeader from "../../../components/ui/ScreenHeader";
@@ -80,7 +80,7 @@ export default function SolicitudesAmistadScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.safe}>
+    <ScreenSafeArea hasBlueHeader backgroundColor="#f5f6fa">
       <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
         <ScreenHeader
           title="Solicitudes de amistad"
@@ -103,7 +103,7 @@ export default function SolicitudesAmistadScreen() {
           ))
         )}
       </ScrollView>
-    </SafeAreaView>
+    </ScreenSafeArea>
   );
 }
 

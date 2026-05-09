@@ -1,7 +1,7 @@
 import React from "react";
+import ScreenSafeArea from "@/components/layout/ScreenSafeArea";
 import { StyleSheet, ScrollView, Alert, ActivityIndicator, Text, View } from "react-native";
 import { router } from "expo-router";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
 import Gestion from "../../../components/Confi_admin/Gestion";
 import Notificacion from "../../../components/Confi_admin/Notificaciones";
@@ -24,7 +24,7 @@ export default function ConfigAdmin() {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={["top", "left", "right"]}>
+    <ScreenSafeArea hasBlueHeader backgroundColor="#F2F2F2">
       <ScrollView
         style={styles.container}
         contentContainerStyle={{ paddingBottom: tabBarHeight + 10 }}
@@ -73,7 +73,7 @@ export default function ConfigAdmin() {
 
         <BotonCerrar onPress={salir} />
       </ScrollView>
-    </SafeAreaView>
+    </ScreenSafeArea>
   );
 }
 
@@ -104,4 +104,3 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
 });
-

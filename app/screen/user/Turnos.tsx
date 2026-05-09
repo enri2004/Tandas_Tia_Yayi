@@ -1,8 +1,8 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import ScreenSafeArea from "@/components/layout/ScreenSafeArea";
 import { useLocalSearchParams } from "expo-router";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { ActivityIndicator, FlatList, StyleSheet, Text, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import Cajatext from "../../../components/ui/Cajatext";
 import ScreenHeader from "../../../components/ui/ScreenHeader";
 import { obtenerTandaPorId } from "../../../utils/api/Tandas/tandasApi";
@@ -74,7 +74,7 @@ export default function Turnos() {
   const miTurno = turnosOrdenados.find((turno) => obtenerUsuarioIdTurno(turno) === userId);
 
   return (
-    <SafeAreaView style={styles.safe}>
+    <ScreenSafeArea hasBlueHeader backgroundColor="#f5f6fa">
       <View style={styles.container}>
         <ScreenHeader
           title="Orden de Turnos"
@@ -141,7 +141,7 @@ export default function Turnos() {
           />
         )}
       </View>
-    </SafeAreaView>
+    </ScreenSafeArea>
   );
 }
 

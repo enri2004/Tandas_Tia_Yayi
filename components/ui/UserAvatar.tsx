@@ -14,7 +14,7 @@ export default function UserAvatar({ uri, size = 56 }: Props) {
       return { uri };
     }
 
-    return require("../../assets/images/icon.png");
+    return require("../../assets/images/default-user.png");
   }, [imageError, uri]);
 
   return (

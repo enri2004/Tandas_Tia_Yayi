@@ -1,7 +1,7 @@
 import React, { useCallback, useState } from "react";
+import ScreenSafeArea from "@/components/layout/ScreenSafeArea";
 import { ActivityIndicator, FlatList, StyleSheet, Text, View } from "react-native";
 import { Stack, useFocusEffect } from "expo-router";
-import { SafeAreaView } from "react-native-safe-area-context";
 import CajaInput from "../../../components/ui/CajaInput";
 import ScreenHeader from "../../../components/ui/ScreenHeader";
 import { obtenerUsuarioGuardado } from "../../../utils/api/login-registrar/authStorage";
@@ -42,7 +42,7 @@ export default function MisTandas() {
   );
 
   return (
-    <SafeAreaView style={styles.safe} edges={["top", "left", "right"]}>
+    <ScreenSafeArea hasBlueHeader backgroundColor="#f5f6fa">
       <View style={styles.container}>
         <Stack.Screen options={{ title: "Mis Tandas" }} />
         <ScreenHeader
@@ -88,7 +88,7 @@ export default function MisTandas() {
           />
         )}
       </View>
-    </SafeAreaView>
+    </ScreenSafeArea>
   );
 }
 

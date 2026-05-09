@@ -1,5 +1,6 @@
 ﻿import ModalMensaje from "@/components/modal_alert/modal";
 import SocialAuthButtons from "@/components/login/SocialAuthButtons";
+import ScreenSafeArea from "@/components/layout/ScreenSafeArea";
 import Botones from "@/components/ui/bontones";
 import Input from "@/components/ui/Input";
 import { useAuth } from "@/contexts/AuthContext";
@@ -19,7 +20,7 @@ import {
   useWindowDimensions,
   View,
 } from "react-native";
-import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 type ErroresFormulario = {
   nombre: string;
@@ -41,6 +42,7 @@ export default function RegistroScreen() {
   const [correo, setCorreo] = useState("");
   const [usuario, setUsuario] = useState("");
   const [password, setPassword] = useState("");
+  const [focusedInput, setFocusedInput] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [tipoUsuario, setTipoUsuario] = useState<"crear" | "unirse" | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
@@ -94,6 +96,10 @@ export default function RegistroScreen() {
     setModalTitulo(titulo);
     setModalTexto(mensaje);
     setModalVisible(true);
+  };
+
+  const handleFocusInput = (name?: string) => {
+    setFocusedInput(name ?? null);
   };
 
   const handleRegistro = () => {
@@ -175,7 +181,7 @@ export default function RegistroScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.safe} edges={["top", "left", "right"]}>
+    <ScreenSafeArea hasBlueHeader backgroundColor="#f2f2f2">
       <KeyboardAvoidingView
         style={styles.safe}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -218,106 +224,90 @@ export default function RegistroScreen() {
               ]}
             >
               <View style={[styles.formCard, { width: cardWidth }]}>
-                <View
-                  style={[
-                    styles.input,
-                    errores.nombre ? styles.inputError : null,
-                  ]}
-                >
-                  <Input
-                    label="Nombre"
-                    placeholder="Escribe tu nombre"
-                    value={nombre}
-                    onChange={(text: string) => {
-                      setNombre(text);
-                      setErrores((prev) => ({ ...prev, nombre: "" }));
-                    }}
-                  />
-                </View>
-                {errores.nombre ? (
-                  <Text style={styles.errorText}>{errores.nombre}</Text>
-                ) : null}
+                <Input
+                  name="nombre"
+                  focusedName={focusedInput}
+                  onFocusInput={handleFocusInput}
+                  onBlurInput={() => setFocusedInput(null)}
+                  label="Nombre"
+                  placeholder="Escribe tu nombre"
+                  value={nombre}
+                  error={errores.nombre}
+                  onChange={(text: string) => {
+                    setNombre(text);
+                    setErrores((prev) => ({ ...prev, nombre: "" }));
+                  }}
+                  containerStyle={styles.input}
+                />
 
-                <View
-                  style={[
-                    styles.input,
-                    errores.edad ? styles.inputError : null,
-                  ]}
-                >
-                  <Input
-                    label="Edad"
-                    placeholder="Escribe tu edad"
-                    value={edad}
-                    onChange={(text: string) => {
-                      setEdad(text);
-                      setErrores((prev) => ({ ...prev, edad: "" }));
-                    }}
-                  />
-                </View>
-                {errores.edad ? (
-                  <Text style={styles.errorText}>{errores.edad}</Text>
-                ) : null}
+                <Input
+                  name="edad"
+                  focusedName={focusedInput}
+                  onFocusInput={handleFocusInput}
+                  onBlurInput={() => setFocusedInput(null)}
+                  label="Edad"
+                  placeholder="Escribe tu edad"
+                  value={edad}
+                  error={errores.edad}
+                  keyboardType="numeric"
+                  onChange={(text: string) => {
+                    setEdad(text);
+                    setErrores((prev) => ({ ...prev, edad: "" }));
+                  }}
+                  containerStyle={styles.input}
+                />
 
-                <View
-                  style={[
-                    styles.input,
-                    errores.correo ? styles.inputError : null,
-                  ]}
-                >
-                  <Input
-                    label="Correo"
-                    placeholder="Escribe tu correo"
-                    value={correo}
-                    onChange={(text: string) => {
-                      setCorreo(text);
-                      setErrores((prev) => ({ ...prev, correo: "" }));
-                    }}
-                  />
-                </View>
-                {errores.correo ? (
-                  <Text style={styles.errorText}>{errores.correo}</Text>
-                ) : null}
+                <Input
+                  name="correo"
+                  focusedName={focusedInput}
+                  onFocusInput={handleFocusInput}
+                  onBlurInput={() => setFocusedInput(null)}
+                  label="Correo"
+                  placeholder="Escribe tu correo"
+                  value={correo}
+                  error={errores.correo}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  onChange={(text: string) => {
+                    setCorreo(text);
+                    setErrores((prev) => ({ ...prev, correo: "" }));
+                  }}
+                  containerStyle={styles.input}
+                />
 
-                <View
-                  style={[
-                    styles.input,
-                    errores.usuario ? styles.inputError : null,
-                  ]}
-                >
-                  <Input
-                    label="Usuario"
-                    placeholder="Elige un usuario"
-                    value={usuario}
-                    onChange={(text: string) => {
-                      setUsuario(text);
-                      setErrores((prev) => ({ ...prev, usuario: "" }));
-                    }}
-                  />
-                </View>
-                {errores.usuario ? (
-                  <Text style={styles.errorText}>{errores.usuario}</Text>
-                ) : null}
+                <Input
+                  name="usuario"
+                  focusedName={focusedInput}
+                  onFocusInput={handleFocusInput}
+                  onBlurInput={() => setFocusedInput(null)}
+                  label="Usuario"
+                  placeholder="Elige un usuario"
+                  value={usuario}
+                  error={errores.usuario}
+                  autoCapitalize="none"
+                  onChange={(text: string) => {
+                    setUsuario(text);
+                    setErrores((prev) => ({ ...prev, usuario: "" }));
+                  }}
+                  containerStyle={styles.input}
+                />
 
-                <View
-                  style={[
-                    styles.input,
-                    errores.password ? styles.inputError : null,
-                  ]}
-                >
-                  <Input
-                    label="Contraseña"
-                    placeholder="Escribe tu contraseña"
-                    value={password}
-                    onChange={(text: string) => {
-                      setPassword(text);
-                      setErrores((prev) => ({ ...prev, password: "" }));
-                    }}
-                    secureTextEntry
-                  />
-                </View>
-                {errores.password ? (
-                  <Text style={styles.errorText}>{errores.password}</Text>
-                ) : null}
+                <Input
+                  name="password"
+                  focusedName={focusedInput}
+                  onFocusInput={handleFocusInput}
+                  onBlurInput={() => setFocusedInput(null)}
+                  label="Contraseña"
+                  placeholder="Escribe tu contraseña"
+                  value={password}
+                  error={errores.password}
+                  onChange={(text: string) => {
+                    setPassword(text);
+                    setErrores((prev) => ({ ...prev, password: "" }));
+                  }}
+                  secureTextEntry
+                  containerStyle={styles.input}
+                />
 
                 <Text style={styles.optionTitle}>¿Qué deseas hacer?</Text>
 
@@ -358,7 +348,7 @@ export default function RegistroScreen() {
                 </View>
 
                 {errores.tipoUsuario ? (
-                  <Text style={[styles.errorText, { textAlign: "center", paddingLeft: 0 }]}>
+                  <Text style={styles.tipoUsuarioError}>
                     {errores.tipoUsuario}
                   </Text>
                 ) : null}
@@ -406,7 +396,7 @@ export default function RegistroScreen() {
           }}
         />
       </KeyboardAvoidingView>
-    </SafeAreaView>
+    </ScreenSafeArea>
   );
 }
 
@@ -481,30 +471,15 @@ const styles = StyleSheet.create({
 
   input: {
     width: "100%",
-    marginBottom: 8,
-    backgroundColor: "#fff",
-    shadowColor: "#000",
-    shadowOpacity: 0.18,
-    shadowRadius: 6,
-    shadowOffset: { width: 0, height: 3 },
-    elevation: 5,
-    paddingHorizontal: 14,
-    paddingVertical: 6,
-    borderRadius: 18,
+    marginBottom: 12,
   },
-
-  inputError: {
-    borderWidth: 1.5,
-    borderColor: "#e53935",
-  },
-
-  errorText: {
+  tipoUsuarioError: {
     width: "100%",
     color: "#e53935",
     fontSize: 13,
     marginTop: 2,
     marginBottom: 10,
-    paddingLeft: 10,
+    textAlign: "center",
   },
 
   optionTitle: {

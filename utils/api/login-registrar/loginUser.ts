@@ -1,9 +1,5 @@
 import { guardarSesion } from "./authStorage";
 import { loginUsuario, obtenerPerfilUsuario } from "./userapi";
-import {
-  registrarDispositivoParaPush,
-  sincronizarPushTokenConBackend,
-} from "@/utils/api/notificaciones/pushNotifications";
 import { prewarmApi } from "@/servers/Axios";
 
 type LoginParams = {
@@ -17,6 +13,7 @@ type LoginDeps = {
   onError: (mensaje: string) => void;
   onSuccess?: (mensaje: string) => void;
 };
+
 export const iniciarSesionUsuario = async (
   datos: LoginParams,
   deps: LoginDeps
@@ -26,7 +23,7 @@ export const iniciarSesionUsuario = async (
 
   try {
     if (!correo.trim() || !password.trim()) {
-      onError("Completa correo/usuario y contraseña");
+      onError("Completa correo/usuario y contrasena");
       return;
     }
 
@@ -40,17 +37,16 @@ export const iniciarSesionUsuario = async (
 
     if (!token) {
       console.log("Respuesta login:", respuesta);
-      onError("El servidor no devolvió token.");
+      onError("El servidor no devolvio token.");
       return;
     }
 
     if (!usuario) {
       console.log("Respuesta login:", respuesta);
-      onError("El servidor no devolvió usuario.");
+      onError("El servidor no devolvio usuario.");
       return;
     }
 
-    // PRIMERO guarda sesión
     await guardarSesion({
       token,
       usuario,
@@ -58,7 +54,6 @@ export const iniciarSesionUsuario = async (
 
     let usuarioCompleto = usuario;
 
-    // DESPUÉS ya puedes pedir perfil porque el token ya existe
     try {
       const perfilRespuesta = await obtenerPerfilUsuario(usuario.id || usuario._id);
       usuarioCompleto = {
@@ -74,15 +69,8 @@ export const iniciarSesionUsuario = async (
       console.log("No se pudo cargar perfil completo:", perfilError);
     }
 
-    try {
-      await registrarDispositivoParaPush();
-      await sincronizarPushTokenConBackend(token);
-    } catch (pushError) {
-      console.log("No se pudo sincronizar el token push después del login", pushError);
-    }
-
     if (onSuccess) {
-      onSuccess(respuesta.mensaje || "Inicio de sesión correcto");
+      onSuccess(respuesta.mensaje || "Inicio de sesion correcto");
     }
 
     onResolved({
@@ -96,7 +84,7 @@ export const iniciarSesionUsuario = async (
       error?.response?.data?.mensaje ||
       error?.response?.data?.detalle ||
       error?.message ||
-      "No se pudo iniciar sesión";
+      "No se pudo iniciar sesion";
 
     onError(mensaje);
   } finally {

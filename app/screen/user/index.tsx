@@ -1,6 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
-import { StatusBar } from "expo-status-bar";
 import { router, useFocusEffect } from "expo-router";
 import React, { useCallback, useMemo, useState } from "react";
 import {
@@ -11,7 +10,8 @@ import {
   useWindowDimensions,
   View,
 } from "react-native";
-import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import ScreenSafeArea from "@/components/layout/ScreenSafeArea";
 
 import ActionButton from "../../../components/index/ActionButton";
 import CardsDashboard from "../../../components/index/cards";
@@ -131,8 +131,7 @@ export default function DashboardScreen() {
   }, []);
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={["top", "left", "right"]}>
-      <StatusBar style="light" backgroundColor="#1e73d8" />
+    <ScreenSafeArea hasBlueHeader backgroundColor="#f5f6fa">
       <ScrollView
         style={styles.container}
         contentContainerStyle={{
@@ -246,7 +245,7 @@ export default function DashboardScreen() {
         onClose={irActualizarPerfil}
         onSecondaryAction={omitirActualizacionPerfil}
       />
-    </SafeAreaView>
+    </ScreenSafeArea>
   );
 }
 

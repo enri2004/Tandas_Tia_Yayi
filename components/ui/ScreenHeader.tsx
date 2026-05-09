@@ -1,9 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
-import { StatusBar } from "expo-status-bar";
 import { router } from "expo-router";
 import React from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 
 type Props = {
   title: string;
@@ -19,39 +17,33 @@ export default function ScreenHeader({
   rightIcon,
 }: Props) {
   return (
-    <SafeAreaView edges={["top"]} style={styles.safeArea}>
-      <StatusBar style="light" backgroundColor="#3b82f6" />
-      <View style={styles.container}>
-        <View style={styles.topRow}>
-          <View style={styles.leftRow}>
-            {showBack ? (
-              <Pressable style={styles.backButton} onPress={() => router.back()}>
-                <Ionicons name="arrow-back" size={20} color="#1d4ed8" />
-              </Pressable>
-            ) : null}
+    <View style={styles.container}>
+      <View style={styles.topRow}>
+        <View style={styles.leftRow}>
+          {showBack ? (
+            <Pressable style={styles.backButton} onPress={() => router.back()}>
+              <Ionicons name="arrow-back" size={20} color="#1d4ed8" />
+            </Pressable>
+          ) : null}
 
-            <View style={styles.textBlock}>
-              <Text style={styles.title}>{title}</Text>
-              {subtitle ? <Text style={styles.subtitle}>{subtitle}</Text> : null}
-            </View>
+          <View style={styles.textBlock}>
+            <Text style={styles.title}>{title}</Text>
+            {subtitle ? <Text style={styles.subtitle}>{subtitle}</Text> : null}
           </View>
-
-          {rightIcon ? <View style={styles.rightIcon}>{rightIcon}</View> : null}
         </View>
+
+        {rightIcon ? <View style={styles.rightIcon}>{rightIcon}</View> : null}
       </View>
-    </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  safeArea: {
-    backgroundColor: "#3b82f6",
+  container: {
+    backgroundColor: "#1e73d8",
     borderBottomLeftRadius: 26,
     borderBottomRightRadius: 26,
     overflow: "hidden",
-  },
-  container: {
-    backgroundColor: "#3b82f6",
     paddingHorizontal: 18,
     paddingBottom: 18,
     paddingTop: 10,

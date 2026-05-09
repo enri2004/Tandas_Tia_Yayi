@@ -1,5 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import {
   KeyboardTypeOptions,
   StyleProp,
@@ -13,10 +13,15 @@ import {
 } from "react-native";
 
 type Props = {
+  name?: string;
+  focusedName?: string | null;
+  onFocusInput?: (name?: string) => void;
+  onBlurInput?: () => void;
   label?: string;
   placeholder?: string;
   value: string;
   onChange?: (text: string) => void;
+  onChangeText?: (text: string) => void;
   secureTextEntry?: boolean;
   keyboardType?: KeyboardTypeOptions;
   autoCapitalize?: TextInputProps["autoCapitalize"];
@@ -26,12 +31,19 @@ type Props = {
   containerStyle?: StyleProp<ViewStyle>;
   inputStyle?: StyleProp<TextStyle>;
   editable?: boolean;
+  onFocus?: () => void;
+  onBlur?: () => void;
 };
 
 export default function Input({
+  name,
+  focusedName,
+  onFocusInput,
+  onBlurInput,
   label,
   placeholder,
   onChange,
+  onChangeText,
   value,
   secureTextEntry = false,
   keyboardType = "default",
@@ -42,8 +54,19 @@ export default function Input({
   containerStyle,
   inputStyle,
   editable = true,
+  onFocus,
+  onBlur,
 }: Props) {
-  const [focused, setFocused] = useState(false);
+  const [localFocused, setLocalFocused] = useState(false);
+  const isFocused = useMemo(
+    () => (focusedName && name ? focusedName === name : localFocused),
+    [focusedName, localFocused, name]
+  );
+
+  const handleChangeText = (text: string) => {
+    onChange?.(text);
+    onChangeText?.(text);
+  };
 
   return (
     <View style={[styles.wrapper, containerStyle]}>
@@ -52,7 +75,7 @@ export default function Input({
       <View
         style={[
           styles.inputShell,
-          focused && styles.inputShellFocused,
+          isFocused && styles.inputShellFocused,
           error ? styles.inputShellError : null,
           !editable ? styles.inputShellDisabled : null,
         ]}
@@ -61,7 +84,7 @@ export default function Input({
           <Ionicons
             name={icon}
             size={18}
-            color={focused ? "#1e73d8" : "#7b8794"}
+            color={isFocused ? "#1e73d8" : "#7b8794"}
             style={styles.icon}
           />
         ) : null}
@@ -69,15 +92,24 @@ export default function Input({
         <TextInput
           placeholder={placeholder}
           value={value}
-          onChangeText={onChange}
+          onChangeText={handleChangeText}
           secureTextEntry={secureTextEntry}
           keyboardType={keyboardType}
           autoCapitalize={autoCapitalize}
           style={[styles.input, multiline && styles.inputMultiline, inputStyle]}
           placeholderTextColor="#94a3b8"
           underlineColorAndroid="transparent"
-          onFocus={() => setFocused(true)}
-          onBlur={() => setFocused(false)}
+          selectionColor="#1e73d8"
+          onFocus={() => {
+            setLocalFocused(true);
+            onFocusInput?.(name);
+            onFocus?.();
+          }}
+          onBlur={() => {
+            setLocalFocused(false);
+            onBlurInput?.();
+            onBlur?.();
+          }}
           multiline={multiline}
           textAlignVertical={multiline ? "top" : "center"}
           editable={editable}
@@ -112,11 +144,7 @@ const styles = StyleSheet.create({
   },
   inputShellFocused: {
     borderColor: "#1e73d8",
-    shadowColor: "#1e73d8",
-    shadowOpacity: 0.12,
-    shadowRadius: 6,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 2,
+    borderWidth: 1.5,
   },
   inputShellError: {
     borderColor: "#dc2626",

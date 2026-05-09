@@ -1,5 +1,6 @@
 import Cajatext from "../../../components/ui/Cajatext";
 import IconoEstado from "../../../components/ui/icono";
+import ScreenSafeArea from "@/components/layout/ScreenSafeArea";
 import { obtenerUsuarioGuardado } from "@/utils/api/login-registrar/authStorage";
 import {
   HistorialItem,
@@ -84,7 +85,8 @@ export default function Historial() {
   };
 
   return (
-    <View style={styles.container}>
+    <ScreenSafeArea hasBlueHeader backgroundColor="#f5f6fa">
+      <View style={styles.container}>
       <ScreenHeader
         title="Historial"
         subtitle={tandaId ? "Movimientos de esta tanda" : "Movimientos recientes"}
@@ -128,7 +130,8 @@ export default function Historial() {
           }}
         />
       )}
-    </View>
+      </View>
+    </ScreenSafeArea>
   );
 }
 

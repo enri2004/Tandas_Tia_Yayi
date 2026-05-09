@@ -1,6 +1,7 @@
 import React from "react";
-import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { Amigo } from "../../utils/api/amigos/amigosTypes";
+import UserAvatar from "../ui/UserAvatar";
 
 type Props = {
   amigo: Amigo;
@@ -21,13 +22,12 @@ export default function CardAmigo({
   actionLabel,
   actionDisabled = false,
 }: Props) {
+  const fotoUsuario = amigo.fotoPerfil || amigo.imagen || amigo.avatar || "";
+
   return (
     <TouchableOpacity style={styles.card} activeOpacity={0.85} onPress={onPress}>
       <View style={styles.infoRow}>
-        <Image
-          source={{ uri: amigo.imagen || "https://i.pravatar.cc/120?u=" + amigo.id }}
-          style={styles.avatar}
-        />
+        <UserAvatar uri={fotoUsuario} size={54} />
         <View style={styles.texts}>
           <Text style={styles.nombre}>{amigo.nombre}</Text>
           <Text style={styles.usuario}>@{amigo.usuario}</Text>
@@ -75,6 +75,7 @@ const styles = StyleSheet.create({
   },
   texts: {
     flex: 1,
+    marginLeft: 12,
   },
   nombre: {
     fontSize: 16,

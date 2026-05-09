@@ -1,4 +1,5 @@
 import { useLocalSearchParams } from "expo-router";
+import ScreenSafeArea from "@/components/layout/ScreenSafeArea";
 import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
@@ -8,7 +9,6 @@ import {
   useWindowDimensions,
   View,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 
 import BotonesAccion from "../../../components/detalles/Botonesaccion";
 import CardInfo from "../../../components/detalles/Cardinfo";
@@ -56,17 +56,17 @@ export default function DetallesScreen() {
 
   if (loading) {
     return (
-      <SafeAreaView style={styles.center}>
+      <ScreenSafeArea backgroundColor="#f5f6fa">
         <ActivityIndicator size="large" color="#3b86f6" />
-      </SafeAreaView>
+      </ScreenSafeArea>
     );
   }
 
   if (!tanda) {
     return (
-      <SafeAreaView style={styles.center}>
+      <ScreenSafeArea backgroundColor="#f5f6fa">
         <Text>No se encontró la tanda</Text>
-      </SafeAreaView>
+      </ScreenSafeArea>
     );
   }
 
@@ -78,7 +78,7 @@ export default function DetallesScreen() {
       )
     : null;
   return (
-    <SafeAreaView style={{ flex: 1 }}>
+    <ScreenSafeArea hasBlueHeader backgroundColor="#f5f6fa">
       <View style={styles.container}>
         <ScrollView
           showsVerticalScrollIndicator={false}
@@ -116,7 +116,7 @@ export default function DetallesScreen() {
           </View>
         </ScrollView>
       </View>
-    </SafeAreaView>
+    </ScreenSafeArea>
   );
 }
 

@@ -8,7 +8,7 @@ import {
   Pressable,
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
-import { SafeAreaView } from "react-native-safe-area-context";
+import ScreenSafeArea from "@/components/layout/ScreenSafeArea";
 import Select from "../../../components/Pagos/Select";
 import MetodoPago from "../../../components/Pagos/MetodoPago";
 import UploadImage from "../../../components/Pagos/UploadImage";
@@ -173,7 +173,7 @@ export default function RegistroPagoScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.safe} edges={["top", "left", "right"]}>
+    <ScreenSafeArea hasBlueHeader backgroundColor="#f5f6fa">
       <ScreenHeader
         title="Registrar Pago"
         subtitle="Este flujo genera historial y notificación automática."
@@ -296,7 +296,7 @@ export default function RegistroPagoScreen() {
           </Pressable>
         </ScrollView>
       </View>
-    </SafeAreaView>
+    </ScreenSafeArea>
   );
 }
 

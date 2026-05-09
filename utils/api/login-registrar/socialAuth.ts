@@ -1,13 +1,9 @@
-﻿import { guardarSesion } from "./authStorage";
+import { guardarSesion } from "./authStorage";
 import {
   actualizarRolUsuario,
   loginSocialUsuario,
   obtenerPerfilUsuario,
 } from "./userapi";
-import {
-  registrarDispositivoParaPush,
-  sincronizarPushTokenConBackend,
-} from "@/utils/api/notificaciones/pushNotifications";
 import { prewarmApi } from "@/servers/Axios";
 
 export type SocialProvider = "google" | "facebook";
@@ -18,8 +14,11 @@ export type SocialProfile = {
   facebookId?: string;
 };
 
-export const obtenerMensajeSocialAuth = (provider: SocialProvider, mode: "login" | "registro") =>
-  `La conexión con ${provider === "google" ? "Google" : "Facebook"} ya quedó lista para ${mode}, pero recuerda configurar las credenciales OAuth reales en tus variables de entorno para usarla en producción.`;
+export const obtenerMensajeSocialAuth = (
+  provider: SocialProvider,
+  mode: "login" | "registro"
+) =>
+  `La conexion con ${provider === "google" ? "Google" : "Facebook"} ya quedo lista para ${mode}, pero recuerda configurar las credenciales OAuth reales en tus variables de entorno para usarla en produccion.`;
 
 export const requiereCompletarPerfil = (usuario: {
   edad?: number | null;
@@ -53,13 +52,6 @@ export const autenticarUsuarioSocial = async (
     usuario: respuesta.usuario,
   });
 
-  try {
-    await registrarDispositivoParaPush();
-    await sincronizarPushTokenConBackend(respuesta.token);
-  } catch (error) {
-    console.log("No se pudo sincronizar el token push tras auth social", error);
-  }
-
   return respuesta;
 };
 
@@ -78,6 +70,3 @@ export const cargarPerfilPostLogin = async (userId: string) => {
   const respuesta = await obtenerPerfilUsuario(userId);
   return respuesta.perfil;
 };
-
-
-

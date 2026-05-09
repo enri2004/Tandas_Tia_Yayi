@@ -1,6 +1,7 @@
 import React from "react";
-import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { SolicitudAmistad } from "../../utils/api/amigos/amigosTypes";
+import UserAvatar from "../ui/UserAvatar";
 
 type Props = {
   solicitud: SolicitudAmistad;
@@ -9,13 +10,12 @@ type Props = {
 };
 
 export default function CardSolicitud({ solicitud, onAceptar, onRechazar }: Props) {
+  const fotoUsuario = solicitud.fotoPerfil || solicitud.imagen || solicitud.avatar || "";
+
   return (
     <View style={styles.card}>
       <View style={styles.row}>
-        <Image
-          source={{ uri: solicitud.imagen || "https://i.pravatar.cc/120?u=" + solicitud.id }}
-          style={styles.avatar}
-        />
+        <UserAvatar uri={fotoUsuario} size={52} />
         <View style={styles.texts}>
           <Text style={styles.nombre}>{solicitud.nombre}</Text>
           <Text style={styles.usuario}>@{solicitud.usuario}</Text>
@@ -56,6 +56,7 @@ const styles = StyleSheet.create({
   },
   texts: {
     flex: 1,
+    marginLeft: 12,
   },
   nombre: {
     fontSize: 16,
