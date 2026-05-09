@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { StyleSheet } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import Splash from "@/components/ui/Splash";
+import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
 import { prewarmApi } from "@/servers/Axios";
 
@@ -13,19 +14,48 @@ export const unstable_settings = {
   anchor: "(tabs)",
 };
 
+function RootNavigator() {
+  const { isHydrating } = useAuth();
+
+  if (isHydrating) {
+    return <Splash />;
+  }
+
+  return (
+    <>
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen
+          name="modal"
+          options={{ presentation: "modal", title: "Modal" }}
+        />
+      </Stack>
+      <StatusBar style="auto" translucent={false} />
+    </>
+  );
+}
+
 export default function RootLayout() {
   const [appReady, setAppReady] = useState(false);
 
   usePushNotifications();
 
   useEffect(() => {
-    prewarmApi().catch(() => null);
+    let mounted = true;
 
-    const timer = setTimeout(() => {
-      setAppReady(true);
-    }, 3000);
+    const prepararApp = async () => {
+      await prewarmApi().catch(() => null);
 
-    return () => clearTimeout(timer);
+      if (mounted) {
+        setAppReady(true);
+      }
+    };
+
+    prepararApp();
+
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   if (!appReady) {
@@ -35,14 +65,9 @@ export default function RootLayout() {
   return (
     <SafeAreaProvider>
       <GestureHandlerRootView style={styles.root}>
-        <Stack screenOptions={{ headerShown: false }}>
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen
-            name="modal"
-            options={{ presentation: "modal", title: "Modal" }}
-          />
-        </Stack>
-        <StatusBar style="auto" translucent={false} />
+        <AuthProvider>
+          <RootNavigator />
+        </AuthProvider>
       </GestureHandlerRootView>
     </SafeAreaProvider>
   );

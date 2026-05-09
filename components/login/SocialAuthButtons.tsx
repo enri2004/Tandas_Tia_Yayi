@@ -2,6 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import React from "react";
 import { StyleSheet, Text, View } from "react-native";
 import Botones from "../ui/bontones";
+import LoginFacebookButton from "./LoginFacebookButton";
 
 type Props = {
   onGoogle: () => void;
@@ -18,9 +19,7 @@ export default function SocialAuthButtons({ onGoogle, onFacebook }: Props) {
           <Ionicons name="logo-google" size={28} color="#DB4437" />
         </Botones>
 
-        <Botones style={styles.socialButton} onPress={onFacebook}>
-          <Ionicons name="logo-facebook" size={28} color="#1877F2" />
-        </Botones>
+        <LoginFacebookButton style={styles.socialButton} onPress={onFacebook} />
       </View>
     </>
   );

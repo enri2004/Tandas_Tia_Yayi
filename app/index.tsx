@@ -1,14 +1,27 @@
-import ModalMensaje from "@/components/modal_alert/modal";
+﻿import ModalMensaje from "@/components/modal_alert/modal";
 import SocialAuthButtons from "@/components/login/SocialAuthButtons";
 import Botones from "@/components/ui/bontones";
-import Input from "@/components/ui/input";
+import Input from "@/components/ui/Input";
+import { useAuth } from "@/contexts/AuthContext";
+import useFacebookAuth from "@/hooks/useFacebookAuth";
+import useGoogleAuth from "@/hooks/Google";
 import { iniciarSesionUsuario } from "@/utils/api/login-registrar/loginUser";
-import { obtenerMensajeSocialAuth } from "@/utils/api/login-registrar/socialAuth";
-import { useRouter } from "expo-router";
-import React, { useState } from "react";
 import {
+  autenticarUsuarioSocial,
+  actualizarRolPostSocial,
+  cargarPerfilPostLogin,
+  requiereCompletarPerfil,
+  resolverRutaPorRol,
+  SocialProvider,
+} from "@/utils/api/login-registrar/socialAuth";
+import { useRouter } from "expo-router";
+import React, { useEffect, useState } from "react";
+import {
+  ActivityIndicator,
   KeyboardAvoidingView,
+  Modal,
   Platform,
+  Pressable,
   ScrollView,
   StyleSheet,
   Text,
@@ -16,23 +29,31 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
-import useGoogleAuth from "@/hooks/Google";
-import useFacebookAuth from "@/hooks/Facebook";
 
-
+type UsuarioAutenticado = {
+  id: string;
+  rol: "admin" | "usuario" | null;
+  edad?: number | null;
+  direccion?: string;
+  telefono?: string;
+};
 
 export default function LoginScreen() {
   const router = useRouter();
+  const { usuario: usuarioSesion, signIn, updateUser } = useAuth();
   const { width, height } = useWindowDimensions();
   const insets = useSafeAreaInsets();
 
   const [correo, setCorreo] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [socialLoading, setSocialLoading] = useState<SocialProvider | null>(null);
 
   const [modalVisible, setModalVisible] = useState(false);
   const [modalTitulo, setModalTitulo] = useState("Aviso");
   const [modalMensaje, setModalMensaje] = useState("");
+
+  const [roleModalVisible, setRoleModalVisible] = useState(false);
 
   const isMobile = width < 600;
   const isTablet = width >= 600 && width < 1024;
@@ -56,16 +77,46 @@ export default function LoginScreen() {
     setModalVisible(true);
   };
 
-  const manejarSocial = (provider: "google" | "facebook") => {
-    mostrarModal(
-      `${provider === "google" ? "Google" : "Facebook"} pendiente`,
-      obtenerMensajeSocialAuth(provider, "login")
-    );
+  const resolverPostLogin = async (usuario: UsuarioAutenticado) => {
+    if (!usuario?.id) {
+      mostrarModal("Error", "No se pudo identificar al usuario autenticado.");
+      return;
+    }
+
+    if (!usuario.rol) {
+      setRoleModalVisible(true);
+      return;
+    }
+
+    const perfil = await cargarPerfilPostLogin(usuario.id);
+    const usuarioCompleto = {
+      ...usuario,
+      ...perfil,
+    };
+
+    await updateUser(usuarioCompleto as any);
+
+    if (requiereCompletarPerfil(usuarioCompleto)) {
+      router.replace(resolverRutaPorRol(usuario.rol));
+      return;
+    }
+
+    router.replace(resolverRutaPorRol(usuario.rol));
   };
+
+  useEffect(() => {
+    if (!usuarioSesion?.id) {
+      return;
+    }
+
+    resolverPostLogin(usuarioSesion as UsuarioAutenticado).catch((error) => {
+      console.log(error);
+    });
+  }, [usuarioSesion?.id, usuarioSesion?.rol]);
 
   const handleLogin = async () => {
     if (!correo.trim() || !password.trim()) {
-      mostrarModal("Campos obligatorios", "Debes escribir tu correo y contraseña");
+      mostrarModal("Campos obligatorios", "Debes escribir tu correo y contraseña.");
       return;
     }
 
@@ -73,20 +124,109 @@ export default function LoginScreen() {
       { correo, password },
       {
         setLoading,
-        onAdmin: () => router.replace("/admin/(tabs)"),
-        onUsuario: () => router.push("/User/(tabs)"),
+        onResolved: async ({ usuario, token }) => {
+          await signIn({ token, usuario });
+          await resolverPostLogin(usuario);
+        },
         onError: (mensaje) => mostrarModal("Error de inicio de sesión", mensaje),
       }
     );
   };
 
-const { promptAsync, request } = useGoogleAuth((user:any) => {
-  router.replace("/User/(tabs)");
-});
+  const procesarSocial = async (provider: SocialProvider, perfil: any) => {
+    const correoProveedor = perfil?.email?.trim?.();
+    const nombreProveedor = perfil?.name?.trim?.() || perfil?.nombre?.trim?.();
+    const fotoProveedor =
+      provider === "google"
+        ? perfil?.picture
+        : perfil?.picture?.data?.url || perfil?.picture?.url;
+    const facebookId = provider === "facebook" ? perfil?.id?.trim?.() || perfil?.id : undefined;
 
-const { promptAsync: facebookLogin } = useFacebookAuth((user) => {
-  router.replace("/User/(tabs)");
-});
+    console.log("[Social Auth] respuesta proveedor:", {
+      provider,
+      id: perfil?.id,
+      name: perfil?.name,
+      email: perfil?.email,
+      picture: fotoProveedor,
+    });
+
+    if (!correoProveedor || !nombreProveedor) {
+      mostrarModal(
+        "Datos incompletos",
+        provider === "facebook"
+          ? "Facebook no devolvió un correo. Verifica tu cuenta o usa otro método de acceso."
+          : "No fue posible obtener nombre y correo desde el proveedor seleccionado."
+      );
+      return;
+    }
+
+    try {
+      setSocialLoading(provider);
+      const respuesta = await autenticarUsuarioSocial(provider, {
+        nombre: nombreProveedor,
+        correo: correoProveedor,
+        fotoPerfil: fotoProveedor || "",
+        facebookId,
+      });
+
+      console.log("[Social Auth] respuesta backend:", {
+        provider,
+        tokenRecibido: !!respuesta?.token,
+        userId: respuesta?.usuario?.id || respuesta?.usuario?._id,
+        rol: respuesta?.usuario?.rol,
+      });
+
+      await signIn({
+        token: respuesta.token,
+        usuario: respuesta.usuario,
+      });
+      await resolverPostLogin(respuesta.usuario);
+    } catch (error: any) {
+      mostrarModal(
+        "Error de autenticación",
+        error?.response?.data?.mensaje || error?.message || "No se pudo completar el acceso social."
+      );
+    } finally {
+      setSocialLoading(null);
+    }
+  };
+
+  const { promptAsync: googlePrompt } = useGoogleAuth((user: any) => {
+    procesarSocial("google", user);
+  });
+
+  const { promptAsync: facebookPrompt } = useFacebookAuth({
+    onSuccess: (user) => {
+      procesarSocial("facebook", user);
+    },
+    onError: (message) => {
+      mostrarModal("Facebook", message);
+    },
+    onCancel: () => {
+      console.log("[Facebook Auth] flujo cancelado sin mostrar modal.");
+    },
+  });
+
+  const seleccionarRol = async (rol: "admin" | "user") => {
+    try {
+      setLoading(true);
+      const respuesta = await actualizarRolPostSocial(rol);
+      await signIn({
+        token: respuesta.token,
+        usuario: respuesta.usuario,
+      });
+      setRoleModalVisible(false);
+      await resolverPostLogin(respuesta.usuario);
+    } catch (error: any) {
+      mostrarModal(
+        "No se pudo guardar el rol",
+        error?.response?.data?.mensaje || error?.message || "Intenta nuevamente"
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <SafeAreaView style={styles.safe} edges={["top", "left", "right"]}>
       <KeyboardAvoidingView
@@ -107,9 +247,7 @@ const { promptAsync: facebookLogin } = useFacebookAuth((user) => {
           <View style={styles.container}>
             <View style={[styles.header, { height: headerHeight }]}>
               <View style={styles.headerContent}>
-                <Text style={[styles.title, { fontSize: titleSize }]}>
-                  Bienvenidos
-                </Text>
+                <Text style={[styles.title, { fontSize: titleSize }]}>Bienvenidos</Text>
                 <Text style={[styles.subtitle, { fontSize: subtitleSize }]}>
                   Accede a tu cuenta
                 </Text>
@@ -134,20 +272,24 @@ const { promptAsync: facebookLogin } = useFacebookAuth((user) => {
               <View style={[styles.formCard, { width: cardWidth }]}>
                 <View style={styles.input}>
                   <Input
-                    placeholder="correo"
+                    label="Correo o usuario"
+                    placeholder="tu@correo.com"
                     value={correo}
                     onChange={setCorreo}
                     autoCapitalize="none"
                     keyboardType="email-address"
+                    icon="mail-outline"
                   />
                 </View>
 
                 <View style={styles.input}>
                   <Input
-                    placeholder="contraseña"
+                    label="Contraseña"
+                    placeholder="Escribe tu contraseña"
                     value={password}
                     onChange={setPassword}
                     secureTextEntry
+                    icon="lock-closed-outline"
                   />
                 </View>
 
@@ -158,18 +300,25 @@ const { promptAsync: facebookLogin } = useFacebookAuth((user) => {
                   styletext={styles.loginButtonText}
                 />
 
+                {socialLoading ? (
+                  <View style={styles.socialLoadingRow}>
+                    <ActivityIndicator size="small" color="#1e73d8" />
+                    <Text style={styles.socialLoadingText}>
+                      Conectando con {socialLoading === "google" ? "Google" : "Facebook"}...
+                    </Text>
+                  </View>
+                ) : null}
+
                 <SocialAuthButtons
-                  onGoogle={() => promptAsync()}
-                    onFacebook={() => facebookLogin()}
+                  onGoogle={() => googlePrompt()}
+                  onFacebook={() => facebookPrompt()}
                 />
 
                 <View style={styles.row}>
                   <Text style={styles.textCuenta}>No tienes cuenta </Text>
                   <Botones
                     nombre="Crear cuenta"
-                    onPress={() =>
-                      router.push("/screen/Login-registre/registro")
-                    }
+                    onPress={() => router.push("/screen/Login-registre/registro")}
                     style={styles.linkBtn}
                     styletext={styles.btnText}
                   />
@@ -186,6 +335,35 @@ const { promptAsync: facebookLogin } = useFacebookAuth((user) => {
         mensaje={modalMensaje}
         onClose={() => setModalVisible(false)}
       />
+
+      <Modal transparent visible={roleModalVisible} animationType="fade">
+        <View style={styles.modalOverlay}>
+          <View style={styles.roleModalBox}>
+            <Text style={styles.roleModalTitle}>¿Qué deseas hacer?</Text>
+            <Text style={styles.roleModalText}>
+              Elige cómo quieres usar Tandas Tía Yayi para terminar tu acceso.
+            </Text>
+
+            <Pressable
+              style={[styles.roleOption, loading && styles.roleOptionDisabled]}
+              disabled={loading}
+              onPress={() => seleccionarRol("admin")}
+            >
+              <Text style={styles.roleOptionTitle}>Crear tandas</Text>
+              <Text style={styles.roleOptionSubtitle}>Entrar como admin</Text>
+            </Pressable>
+
+            <Pressable
+              style={[styles.roleOption, loading && styles.roleOptionDisabled]}
+              disabled={loading}
+              onPress={() => seleccionarRol("user")}
+            >
+              <Text style={styles.roleOptionTitle}>Unirse a tandas</Text>
+              <Text style={styles.roleOptionSubtitle}>Entrar como usuario</Text>
+            </Pressable>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -255,22 +433,11 @@ const styles = StyleSheet.create({
   input: {
     width: "100%",
     marginBottom: 14,
-    backgroundColor: "#fff",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowRadius: 4,
-    shadowOpacity: 0.6,
-    shadowColor: "#000",
-    borderRadius: 18,
-    paddingHorizontal: 14,
-    paddingVertical: 6,
   },
   loginButton: {
     width: "100%",
     minWidth: 190,
-    backgroundColor: "#4285f4",
+    backgroundColor: "#1e73d8",
     borderRadius: 28,
     alignItems: "center",
     justifyContent: "center",
@@ -299,8 +466,70 @@ const styles = StyleSheet.create({
     marginLeft: 5,
   },
   btnText: {
-    color: "#4285F4",
+    color: "#1e73d8",
     fontSize: 15,
     fontWeight: "700",
   },
+  socialLoadingRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    marginTop: 12,
+  },
+  socialLoadingText: {
+    color: "#475569",
+    fontSize: 14,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.45)",
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 24,
+  },
+  roleModalBox: {
+    width: "100%",
+    maxWidth: 380,
+    backgroundColor: "#fff",
+    borderRadius: 22,
+    padding: 22,
+  },
+  roleModalTitle: {
+    fontSize: 22,
+    fontWeight: "700",
+    color: "#0f172a",
+    textAlign: "center",
+  },
+  roleModalText: {
+    marginTop: 10,
+    marginBottom: 18,
+    color: "#475569",
+    textAlign: "center",
+    lineHeight: 21,
+  },
+  roleOption: {
+    borderWidth: 1,
+    borderColor: "#bfdbfe",
+    backgroundColor: "#f8fbff",
+    borderRadius: 18,
+    padding: 16,
+    marginBottom: 12,
+  },
+  roleOptionDisabled: {
+    opacity: 0.6,
+  },
+  roleOptionTitle: {
+    color: "#1e3a8a",
+    fontWeight: "700",
+    fontSize: 16,
+  },
+  roleOptionSubtitle: {
+    color: "#64748b",
+    marginTop: 4,
+  },
 });
+
+
+
+
+

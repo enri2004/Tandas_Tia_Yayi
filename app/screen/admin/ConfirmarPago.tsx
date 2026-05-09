@@ -1,17 +1,24 @@
-import React, { useEffect, useState } from "react";
+﻿import React, { useEffect, useState } from "react";
 import { View, Text, StyleSheet, ScrollView, Alert } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import InfoPago from "../../../components/ConfirmarPago/InfoPago";
 import Comprobante from "../../../components/ConfirmarPago/Comprobante";
 import AccionesPago from "../../../components/ConfirmarPago/AccionesPago";
-import { obtenerComprobantes, revisarComprobante } from "@/utils/api/comprobantes/comprobantesApi";
+import {
+  aprobarComprobante,
+  obtenerComprobantes,
+  rechazarComprobante,
+} from "@/utils/api/comprobantes/comprobantesApi";
 import { obtenerUsuarioGuardado } from "@/utils/api/login-registrar/authStorage";
 
 type ComprobanteDetalle = {
   _id: string;
   monto: number;
   metodoPago: string;
+  banco?: string;
+  clabe?: string;
+  personaRecibe?: string;
   comprobanteUrl?: string;
   estado: "pendiente" | "aprobado" | "rechazado";
   observacionesAdmin?: string;
@@ -60,16 +67,21 @@ export default function ConfirmarPagos() {
       setLoading(true);
       const admin = await obtenerUsuarioGuardado();
 
-      await revisarComprobante(comprobante._id, {
-        estado,
-        adminId: admin?.id,
-      });
+      if (estado === "aprobado") {
+        await aprobarComprobante(comprobante._id, {
+          adminId: admin?.id,
+        });
+      } else {
+        await rechazarComprobante(comprobante._id, {
+          adminId: admin?.id,
+        });
+      }
 
       Alert.alert(
-        "Exito",
+        "Éxito",
         estado === "aprobado"
-          ? "Comprobante aprobado. Se genero historial, notificacion y push al usuario."
-          : "Comprobante rechazado. Se genero historial, notificacion y push al usuario."
+          ? "Comprobante aprobado. Se generó historial, notificación y push al usuario."
+          : "Comprobante rechazado. Se generó historial, notificación y push al usuario."
       );
 
       router.back();
@@ -87,7 +99,7 @@ export default function ConfirmarPagos() {
   if (!comprobante) {
     return (
       <View style={styles.emptyState}>
-        <Text style={styles.emptyTitle}>No se encontro un comprobante pendiente</Text>
+        <Text style={styles.emptyTitle}>No se encontró un comprobante pendiente</Text>
       </View>
     );
   }
@@ -111,6 +123,9 @@ export default function ConfirmarPagos() {
           monto={`$${comprobante.monto || 0} MXN`}
           fecha={new Date(comprobante.createdAt).toLocaleString("es-MX")}
           metodo={comprobante.metodoPago}
+          banco={comprobante.banco}
+          clabe={comprobante.clabe}
+          beneficiario={comprobante.personaRecibe}
         />
 
         <View style={styles.usuarioBox}>
@@ -131,7 +146,7 @@ export default function ConfirmarPagos() {
           onRechazar={() => revisar("rechazado")}
         />
 
-        {loading && <Text style={styles.loadingText}>Procesando revision...</Text>}
+        {loading && <Text style={styles.loadingText}>Procesando revisión...</Text>}
       </View>
     </ScrollView>
   );
@@ -228,3 +243,8 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
 });
+
+
+
+
+

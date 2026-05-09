@@ -1,63 +1,57 @@
 import { Ionicons } from "@expo/vector-icons";
+import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
 import { StatusBar } from "expo-status-bar";
 import { router, useFocusEffect } from "expo-router";
 import React, { useCallback, useMemo, useState } from "react";
 import {
-  ActivityIndicator,
   ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
+  useWindowDimensions,
   View,
 } from "react-native";
-import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+
 import ActionButton from "../../../components/index/ActionButton";
 import CardsDashboard from "../../../components/index/cards";
 import TandasHomePanel from "../../../components/index/TandasHomePanel";
 import ModalMensaje from "../../../components/modal_alert/modal";
 import UserAvatar from "../../../components/ui/UserAvatar";
 import { useResponsive } from "../../../hooks/useResponsive";
-import {
-  actualizarUsuarioGuardadoLocal,
-  obtenerUsuarioGuardado,
-} from "../../../utils/api/login-registrar/authStorage";
-import { guardarMiPerfil } from "../../../utils/api/amigos/amigosService";
-import { cargarResumenDashboard } from "../../../utils/api/Tandas/tandasService";
 import { DashboardResumenResponse } from "../../../utils/api/Tandas/tandasApi";
+import { cargarResumenDashboard } from "../../../utils/api/Tandas/tandasService";
+import { obtenerUsuarioGuardado } from "../../../utils/api/login-registrar/authStorage";
+import {
+  guardarPerfilIncompletoPospuestoHasta,
+  limpiarPerfilIncompletoPospuestoHasta,
+  obtenerPerfilIncompletoPospuestoHasta,
+  perfilEstaIncompleto,
+  PERFIL_MODAL_POSPONER_HORAS,
+} from "../../../utils/api/login-registrar/profileModalStorage";
 
 type DashboardState = DashboardResumenResponse | null;
 
-const formatearFechaActual = () => {
-  return new Intl.DateTimeFormat("es-MX", {
+const formatearFechaActual = () =>
+  new Intl.DateTimeFormat("es-MX", {
     weekday: "long",
     day: "numeric",
     month: "long",
     year: "numeric",
   }).format(new Date());
-};
-
-const formatearMoneda = (valor?: number | null) => {
-  if (typeof valor !== "number" || Number.isNaN(valor)) {
-    return "Sin dato";
-  }
-
-  return new Intl.NumberFormat("es-MX", {
-    style: "currency",
-    currency: "MXN",
-    maximumFractionDigits: 0,
-  }).format(valor);
-};
 
 export default function DashboardScreen() {
+  const { width } = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const tabBarHeight = useBottomTabBarHeight();
-  const { horizontalPadding, titleSize, subtitleSize, bodySize, tandasPanelHeight, isTablet, isDesktop } =
-    useResponsive();
+  const { titleSize, subtitleSize, tandasPanelHeight, isTablet, isDesktop } = useResponsive();
   const [dashboard, setDashboard] = useState<DashboardState>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [modalPerfilVisible, setModalPerfilVisible] = useState(false);
+  const isMobile = width < 768;
+  const horizontalPadding = isMobile ? 16 : 28;
+  const contentMaxWidth = isMobile ? undefined : 1400;
 
   const cargarDatos = useCallback(async () => {
     setError("");
@@ -91,18 +85,26 @@ export default function DashboardScreen() {
   const usuarioNombre = dashboard?.usuario?.nombre?.split(" ")[0] || "Usuario";
   const notificacionesSinLeer = dashboard?.resumen?.notificacionesSinLeer || 0;
   const misTandas = dashboard?.misTandas || [];
-  const fotoPerfil =
-    dashboard?.usuario?.fotoPerfil || dashboard?.usuario?.imagen || "";
+  const fotoPerfil = dashboard?.usuario?.fotoPerfil || dashboard?.usuario?.imagen || "";
 
   const revisarModalPerfil = useCallback(async () => {
     const usuario = await obtenerUsuarioGuardado();
+    const perfilIncompleto = perfilEstaIncompleto(usuario);
 
-    if (
-      usuario?.mostrarModalActualizarDatos &&
-      !usuario?.perfilActualizado
-    ) {
-      setModalPerfilVisible(true);
+    if (!perfilIncompleto || usuario?.perfilActualizado) {
+      setModalPerfilVisible(false);
+      await limpiarPerfilIncompletoPospuestoHasta();
+      return;
     }
+
+    const pospuestoHasta = await obtenerPerfilIncompletoPospuestoHasta();
+
+    if (pospuestoHasta && Date.now() < pospuestoHasta) {
+      setModalPerfilVisible(false);
+      return;
+    }
+
+    setModalPerfilVisible(true);
   }, []);
 
   useFocusEffect(
@@ -112,22 +114,12 @@ export default function DashboardScreen() {
   );
 
   const omitirActualizacionPerfil = useCallback(async () => {
-    const usuario = await obtenerUsuarioGuardado();
-
-    if (!usuario?.id) {
-      setModalPerfilVisible(false);
-      return;
-    }
+    const hasta = Date.now() + PERFIL_MODAL_POSPONER_HORAS * 60 * 60 * 1000;
 
     try {
-      await guardarMiPerfil(usuario.id, {
-        mostrarModalActualizarDatos: false,
-      });
-      await actualizarUsuarioGuardadoLocal({
-        mostrarModalActualizarDatos: false,
-      });
+      await guardarPerfilIncompletoPospuestoHasta(hasta);
     } catch (modalError) {
-      console.log("No se pudo actualizar la preferencia del modal", modalError);
+      console.log("No se pudo posponer el modal de perfil", modalError);
     } finally {
       setModalPerfilVisible(false);
     }
@@ -146,95 +138,102 @@ export default function DashboardScreen() {
         contentContainerStyle={{
           paddingTop: 8,
           paddingBottom: Math.max(tabBarHeight - insets.bottom, 18),
-          paddingHorizontal: horizontalPadding,
         }}
         showsVerticalScrollIndicator={false}
       >
-        <View style={styles.header}>
-          <View style={styles.headerContent}>
-            <TouchableOpacity
-              activeOpacity={0.85}
-              onPress={() => router.push("/screen/user/perfil")}
-              style={styles.avatarButton}
-            >
-              <UserAvatar
-                uri={fotoPerfil}
-                size={isDesktop ? 72 : isTablet ? 66 : 56}
-              />
-            </TouchableOpacity>
+        <View
+          style={[
+            styles.contentWrapper,
+            {
+              maxWidth: contentMaxWidth,
+              paddingHorizontal: horizontalPadding,
+            },
+          ]}
+        >
+          <View style={styles.header}>
+            <View style={styles.headerContent}>
+              <TouchableOpacity
+                activeOpacity={0.85}
+                onPress={() => router.push("/screen/user/perfil")}
+                style={styles.avatarButton}
+              >
+                <UserAvatar
+                  uri={fotoPerfil}
+                  size={isDesktop ? 72 : isTablet ? 66 : 56}
+                />
+              </TouchableOpacity>
 
-            <View style={styles.headerTextContainer}>
-              <Text style={[styles.saludo, { fontSize: titleSize }]}>{`Hola, ${usuarioNombre}!`}</Text>
-              <Text style={[styles.fecha, { fontSize: subtitleSize }]}>{fechaActual}</Text>
+              <View style={styles.headerTextContainer}>
+                <Text style={[styles.saludo, { fontSize: titleSize }]}>{`Hola, ${usuarioNombre}!`}</Text>
+                <Text style={[styles.fecha, { fontSize: subtitleSize }]}>{fechaActual}</Text>
+              </View>
             </View>
+
+            <TouchableOpacity
+              onPress={() => router.push("/screen/user/notificaciones")}
+              style={styles.notificationButton}
+              activeOpacity={0.8}
+            >
+              <Ionicons name="notifications-outline" size={26} color="#1f2937" />
+              {notificacionesSinLeer > 0 ? (
+                <View style={styles.badge}>
+                  <Text style={styles.badgeText}>
+                    {notificacionesSinLeer > 9 ? "9+" : notificacionesSinLeer}
+                  </Text>
+                </View>
+              ) : null}
+            </TouchableOpacity>
           </View>
 
-          <TouchableOpacity
-            onPress={() => router.push("/screen/user/notificaciones")}
-            style={styles.notificationButton}
-            activeOpacity={0.8}
-          >
-            <Ionicons name="notifications-outline" size={26} color="#1f2937" />
-            {notificacionesSinLeer > 0 ? (
-              <View style={styles.badge}>
-                <Text style={styles.badgeText}>
-                  {notificacionesSinLeer > 9 ? "9+" : notificacionesSinLeer}
-                </Text>
-              </View>
-            ) : null}
-          </TouchableOpacity>
-        </View>
+          <View style={styles.cardsWrapper}>
+            <CardsDashboard
+              tandasActivas={dashboard?.resumen?.tandasActivas || 0}
+              proximoPagoMonto={dashboard?.resumen?.proximoPago?.monto ?? null}
+              proximaFechaLimite={dashboard?.resumen?.proximoPago?.fechaLimite ?? null}
+              proximoTurnoNumero={dashboard?.resumen?.proximoTurno?.numeroTurno ?? null}
+              proximoTurnoMonto={dashboard?.resumen?.proximoTurno?.montoRecibir ?? null}
+            />
+          </View>
 
-        <CardsDashboard
-          tandasActivas={dashboard?.resumen?.tandasActivas || 0}
-          proximoPagoMonto={dashboard?.resumen?.proximoPago?.monto ?? null}
-          proximaFechaLimite={dashboard?.resumen?.proximoPago?.fechaLimite ?? null}
-          proximoTurnoNumero={dashboard?.resumen?.proximoTurno?.numeroTurno ?? null}
-          proximoTurnoMonto={dashboard?.resumen?.proximoTurno?.montoRecibir ?? null}
-        />
+          <Text style={[styles.sectionTitle, { fontSize: titleSize }]}>Seccion de Acciones Rapidas</Text>
 
-        <Text style={[styles.sectionTitle, { fontSize: titleSize }]}>Seccion de Acciones Rapidas</Text>
+          <View style={styles.actions}>
+            <ActionButton
+              icon={<Ionicons name="wallet" size={28} color="white" />}
+              text="Realizar Pago"
+              color="green"
+              onPress={() => router.push("/screen/user/RegistroPagosUser")}
+            />
+            <ActionButton
+              icon={<Ionicons name="layers" size={28} color="white" />}
+              text="Historial"
+              color="#3b82f2"
+              onPress={() => router.push("/screen/user/historial")}
+            />
+            <ActionButton
+              icon={<Ionicons name="add-circle" size={28} color="white" />}
+              text="Unirse a Tanda"
+              color="orange"
+              onPress={() => router.push("/screen/user/Unir_Tadas")}
+            />
+            <ActionButton
+              icon={<Ionicons name="people" size={28} color="white" />}
+              text="Invitar Amigos"
+              color="#d017da"
+              onPress={() => router.push("/screen/user/invitar")}
+            />
+          </View>
 
-        <View style={styles.actions}>
-          <ActionButton
-            icon={<Ionicons name="wallet" size={32} color="white" />}
-            text="Realizar Pago"
-            color="green"
-            onPress={() => router.push("/screen/user/RegistroPagosUser")}
-          />
-
-          <ActionButton
-            icon={<Ionicons name="layers" size={32} color="white" />}
-            text="Historial"
-            color="#3b82f2"
-            onPress={() => router.push("/screen/user/historial")}
-          />
-
-          <ActionButton
-            icon={<Ionicons name="add-circle" size={32} color="white" />}
-            text="Unirse a Tanda"
-            color="orange"
-            onPress={() => router.push("/screen/user/Unir_Tadas")}
-          />
-
-          <ActionButton
-            icon={<Ionicons name="people" size={32} color="white" />}
-            text="Invitar Amigos"
-            color="#d017da"
-            onPress={() => router.push("/screen/user/invitar")} // ✅
-          />
-        </View>
-
-        <View style={styles.tandasSection}>
-          <Text style={[styles.sectionTitle, { fontSize: titleSize }]}>Mis Tandas</Text>
-
-          <TandasHomePanel
-            tandas={misTandas}
-            loading={loading}
-            error={error}
-            maxHeight={tandasPanelHeight}
-            onRetry={cargarDatos}
-          />
+          <View style={styles.tandasSection}>
+            <Text style={[styles.sectionTitle, { fontSize: titleSize }]}>Mis Tandas</Text>
+            <TandasHomePanel
+              tandas={misTandas}
+              loading={loading}
+              error={error}
+              maxHeight={tandasPanelHeight}
+              onRetry={cargarDatos}
+            />
+          </View>
         </View>
       </ScrollView>
 
@@ -260,13 +259,16 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#f5f6fa",
   },
+  contentWrapper: {
+    width: "100%",
+    alignSelf: "center",
+  },
   header: {
     flexDirection: "row",
-    justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 20,
-    marginTop: 0,
+    justifyContent: "space-between",
     gap: 12,
+    marginBottom: 20,
     backgroundColor: "#1e73d8",
     borderRadius: 24,
     paddingHorizontal: 16,
@@ -320,6 +322,10 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontWeight: "700",
   },
+  cardsWrapper: {
+    width: "100%",
+    alignSelf: "center",
+  },
   sectionTitle: {
     fontWeight: "bold",
     marginBottom: 10,
@@ -327,10 +333,10 @@ const styles = StyleSheet.create({
   },
   actions: {
     flexDirection: "row",
-    flexWrap: "wrap",
     justifyContent: "space-between",
+    alignItems: "flex-start",
+    width: "100%",
     marginBottom: 20,
-    gap: 14,
   },
   tandasSection: {
     marginTop: 30,

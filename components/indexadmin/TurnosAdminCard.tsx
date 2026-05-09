@@ -1,15 +1,18 @@
-import { Ionicons } from "@expo/vector-icons";
+﻿import { Ionicons } from "@expo/vector-icons";
 import React, { useEffect, useMemo, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
-import type { IntegranteItem, TurnoItem } from "../../utils/api/Tandas/tandasTypes";
+import type { IntegranteItem, TurnoCobroItem, TurnoItem } from "../../utils/api/Tandas/tandasTypes";
 
 type Props = {
   turnos: TurnoItem[];
+  turnosCobro?: TurnoCobroItem[];
   integrantes?: IntegranteItem[];
   participantes?: number;
   guardando?: boolean;
   onAsignarManual?: (integrantesOrdenados: string[]) => void;
   onAsignarAleatorio?: () => void;
+  onNotificarEntrega?: (numeroTurno: number) => void;
+  onMarcarEntregado?: (numeroTurno: number) => void;
 };
 
 type TurnoEditable = {
@@ -33,11 +36,14 @@ const moverElemento = (lista: TurnoEditable[], fromIndex: number, toIndex: numbe
 
 export default function TurnosAdminCard({
   turnos,
+  turnosCobro = [],
   integrantes = [],
   participantes = 0,
   guardando = false,
   onAsignarManual,
   onAsignarAleatorio,
+  onNotificarEntrega,
+  onMarcarEntregado,
 }: Props) {
   const turnosBase = useMemo<TurnoEditable[]>(() => {
     if (turnos.length) {
@@ -90,7 +96,7 @@ export default function TurnosAdminCard({
     <View style={styles.card}>
       <Text style={styles.title}>Turnos y fechas</Text>
       <Text style={styles.subtitle}>
-        Cuando la tanda este completa puedes acomodar el orden manualmente o generar uno aleatorio.
+        Cuando la tanda esté completa puedes acomodar el orden manualmente o generar uno aleatorio.
       </Text>
 
       {!tandaCompleta ? (
@@ -102,7 +108,7 @@ export default function TurnosAdminCard({
       ) : null}
 
       {ordenEditable.length === 0 ? (
-        <Text style={styles.emptyText}>Aun no hay integrantes para programar turnos.</Text>
+        <Text style={styles.emptyText}>Aún no hay integrantes para programar turnos.</Text>
       ) : (
         ordenEditable.map((turno, index) => (
           <View key={`${turno.id}-${turno.orden}`} style={styles.item}>
@@ -110,8 +116,31 @@ export default function TurnosAdminCard({
               <Text style={styles.turno}>Turno #{index + 1}</Text>
               <Text style={styles.name}>{turno.nombre}</Text>
               <Text style={styles.fecha}>
-                {turno.fechaProgramada || "La fecha se generara al asignar turnos"}
+                {turnosCobro[index]?.fechaCobroTexto || turno.fechaProgramada || "La fecha se generará al asignar turnos"}
               </Text>
+              {turnosCobro[index] ? (
+                <Text style={styles.amount}>
+                  Recibe: ${Number(turnosCobro[index]?.montoARecibir || 0)}
+                </Text>
+              ) : null}
+              {onNotificarEntrega ? (
+                <View style={styles.turnoButtons}>
+                  <Pressable
+                    style={styles.notifyButton}
+                    onPress={() => onNotificarEntrega(index + 1)}
+                  >
+                    <Text style={styles.notifyButtonText}>Notificar entrega</Text>
+                  </Pressable>
+                  {onMarcarEntregado ? (
+                    <Pressable
+                      style={styles.deliverButton}
+                      onPress={() => onMarcarEntregado(index + 1)}
+                    >
+                      <Text style={styles.deliverButtonText}>Marcar entregado</Text>
+                    </Pressable>
+                  ) : null}
+                </View>
+              ) : null}
             </View>
 
             {tandaCompleta ? (
@@ -226,6 +255,12 @@ const styles = StyleSheet.create({
     color: "#6b7280",
     fontSize: 12,
   },
+  amount: {
+    marginTop: 4,
+    color: "#1e73d8",
+    fontSize: 12,
+    fontWeight: "700",
+  },
   badge: {
     borderRadius: 999,
     paddingHorizontal: 10,
@@ -288,4 +323,36 @@ const styles = StyleSheet.create({
   disabledButton: {
     opacity: 0.6,
   },
+  notifyButton: {
+    marginTop: 8,
+    backgroundColor: "#dbeafe",
+    borderRadius: 999,
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+  },
+  notifyButtonText: {
+    color: "#1d4ed8",
+    fontWeight: "700",
+    fontSize: 12,
+  },
+  turnoButtons: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+    marginTop: 8,
+  },
+  deliverButton: {
+    backgroundColor: "#dcfce7",
+    borderRadius: 999,
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+  },
+  deliverButtonText: {
+    color: "#15803d",
+    fontWeight: "700",
+    fontSize: 12,
+  },
 });
+
+
+

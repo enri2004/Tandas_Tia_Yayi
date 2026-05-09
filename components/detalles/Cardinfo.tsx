@@ -1,23 +1,32 @@
-// /components/detalles/CardInfo.tsx
 import React from "react";
-import { StyleSheet, Text, View } from "react-native";
-type Props={
-  Valor:number,
-  Turno:number,
-  Participantes:number,
-  Pagos:number
-}
+import { StyleSheet, Text, View, useWindowDimensions } from "react-native";
+
+type Props = {
+  Valor: number;
+  Turno: number;
+  Participantes: number;
+  Pagos: number;
+};
 
 export default function CardInfo({
   Valor,
   Pagos,
   Turno,
   Participantes,
-}:Props) {
-   
+}: Props) {
+  const { width } = useWindowDimensions();
   const total = Valor * Participantes;
+  const overlap = width >= 768 ? -22 : -18;
+
   return (
-    <View style={styles.cardInfo}>
+    <View
+      style={[
+        styles.cardInfo,
+        {
+          marginTop: overlap,
+        },
+      ]}
+    >
       <View style={styles.grid}>
         <View style={styles.item}>
           <Text style={styles.label}>Pago por turno</Text>
@@ -47,44 +56,52 @@ export default function CardInfo({
 }
 
 const styles = StyleSheet.create({
-  cardInfo:{
-    backgroundColor:"white",
-    marginTop:-40,
-    marginHorizontal:20,
-    borderRadius:20,
-    padding:20,
-    elevation:5
+  cardInfo: {
+    width: "100%",
+    backgroundColor: "white",
+    borderRadius: 24,
+    padding: 20,
+    elevation: 5,
+    position: "relative",
+    marginHorizontal: 0,
+    overflow: "hidden",
   },
-  grid:{
-    flexDirection:"row",
-    flexWrap:"wrap"
+  grid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
   },
-  item:{
-    width:"50%",
-    padding:10,
-    alignItems:"center"
+  item: {
+    width: "50%",
+    padding: 10,
+    alignItems: "center",
   },
-  label:{
-    fontSize:12,
-    color:"#777"
+  label: {
+    fontSize: 12,
+    color: "#777",
   },
-  valor:{
-    fontSize:18,
-    fontWeight:"bold",
-    marginTop:5
+  valor: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginTop: 5,
   },
-  lineVertical:{
-    position:"absolute",
-    width:1,
-    height:"100%",
-    backgroundColor:"#eee",
-    left:"50%"
+  lineVertical: {
+    position: "absolute",
+    left: "50%",
+    top: 0,
+    bottom: 0,
+    width: 1,
+    backgroundColor: "#E5E7EB",
+    transform: [{ translateX: -0.5 }],
+    pointerEvents: "none",
   },
-  lineHorizontal:{
-    position:"absolute",
-    height:1,
-    width:"100%",
-    backgroundColor:"#eee",
-    top:"50%"
+  lineHorizontal: {
+    position: "absolute",
+    top: "50%",
+    left: 0,
+    right: 0,
+    height: 1,
+    backgroundColor: "#E5E7EB",
+    transform: [{ translateY: -0.5 }],
+    pointerEvents: "none",
   },
 });

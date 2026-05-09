@@ -1,174 +1,68 @@
 import React from "react";
-import { View, Text, StyleSheet, Image, Pressable, ScrollView } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import { View, Text, StyleSheet } from "react-native";
+
 type Props = {
   monto: string;
   fecha: string;
   metodo: string;
+  banco?: string;
+  clabe?: string;
+  beneficiario?: string;
 };
 
-export default function InfoPago ({ monto, fecha, metodo }: Props) {
+export default function InfoPago({
+  monto,
+  fecha,
+  metodo,
+  banco,
+  clabe,
+  beneficiario,
+}: Props) {
+  const filas = [
+    { label: "Monto", value: monto, emphasis: true },
+    { label: "Fecha", value: fecha },
+    { label: "Metodo", value: metodo },
+    banco ? { label: "Banco", value: banco } : null,
+    clabe ? { label: "Clave", value: clabe } : null,
+    beneficiario ? { label: "Beneficiario", value: beneficiario } : null,
+  ].filter(Boolean) as Array<{ label: string; value: string; emphasis?: boolean }>;
 
-return (
-
-  <View style={styles.infoBox}>
-    <View style={styles.row}>
-      <Text style={styles.label}>Monto</Text>
-      <Text style={styles.valueGreen}>{monto}</Text>
+  return (
+    <View style={styles.infoBox}>
+      {filas.map((fila) => (
+        <View key={fila.label} style={styles.row}>
+          <Text style={styles.label}>{fila.label}</Text>
+          <Text style={fila.emphasis ? styles.valueGreen : styles.value}>{fila.value}</Text>
+        </View>
+      ))}
     </View>
-
-    <View style={styles.row}>
-      <Text style={styles.label}>Fecha</Text>
-      <Text style={styles.value}>{fecha}</Text>
-    </View>
-
-    <View style={styles.row}>
-      <Text style={styles.label}>Método</Text>
-      <Text style={styles.value}>{metodo}</Text>
-    </View>
-  </View>
-);
+  );
 }
 
 const styles = StyleSheet.create({
-
-container:{
-  flex:1,
-  backgroundColor:"#f2f4f7",
-  padding:20
-},
-
-/* HEADER */
-header:{
-  flexDirection:"row",
-  justifyContent:"space-between",
-  alignItems:"center",
-  marginBottom:20
-},
-
-title:{
-  fontSize:22,
-  color:"#27ae60", // 🔥 VERDE PRINCIPAL
-  fontWeight:"bold"
-},
-
-/* CARD */
-card:{
-  backgroundColor:"#fff",
-  borderRadius:20,
-  overflow:"hidden",
-  elevation:4
-},
-
-/* HEADER COLOR (tipo tus otras pantallas) */
-headerColor:{
-  backgroundColor:"#4A90E2", // 🔵 AZUL
-  padding:15,
-  flexDirection:"row",
-  justifyContent:"space-between",
-  alignItems:"center"
-},
-
-tanda:{
-  fontSize:16,
-  color:"#fff",
-  fontWeight:"bold"
-},
-
-badge:{
-  backgroundColor:"#27ae60",
-  paddingHorizontal:10,
-  paddingVertical:5,
-  borderRadius:20
-},
-
-badgeText:{
-  color:"#fff",
-  fontSize:12,
-  fontWeight:"bold"
-},
-
-/* INFO */
-infoBox:{
-  padding:15
-},
-
-row:{
-  flexDirection:"row",
-  justifyContent:"space-between",
-  marginBottom:10
-},
-
-label:{
-  color:"#777",
-  fontSize:13
-},
-
-value:{
-  color:"#333",
-  fontSize:13
-},
-
-valueGreen:{
-  color:"#27ae60",
-  fontWeight:"bold"
-},
-
-/* COMPROBANTE */
-comprobanteContainer:{
-  paddingHorizontal:15,
-  marginBottom:20
-},
-
-sectionTitle:{
-  color:"#4A90E2", // 🔵 azul como en tus otras vistas
-  marginBottom:8,
-  fontWeight:"600"
-},
-
-comprobante:{
-  width:"100%",
-  height:200,
-  borderRadius:12,
-  resizeMode:"cover"
-},
-
-/* BOTONES */
-actions:{
-  padding:15,
-  gap:10
-},
-
-confirmar:{
-  flexDirection:"row",
-  justifyContent:"center",
-  alignItems:"center",
-  backgroundColor:"#27ae60",
-  padding:14,
-  borderRadius:12
-},
-
-confirmarText:{
-  color:"#fff",
-  fontWeight:"bold",
-  marginLeft:8
-},
-
-rechazar:{
-  flexDirection:"row",
-  justifyContent:"center",
-  alignItems:"center",
-  backgroundColor:"#fff",
-  padding:14,
-  borderRadius:12,
-  borderWidth:1,
-  borderColor:"#e74c3c"
-},
-
-rechazarText:{
-  color:"#e74c3c",
-  fontWeight:"bold",
-  marginLeft:8
-}
-
+  infoBox: {
+    padding: 15,
+  },
+  row: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 10,
+    gap: 12,
+  },
+  label: {
+    color: "#777",
+    fontSize: 13,
+  },
+  value: {
+    color: "#333",
+    fontSize: 13,
+    flex: 1,
+    textAlign: "right",
+  },
+  valueGreen: {
+    color: "#1e73d8",
+    fontWeight: "bold",
+    flex: 1,
+    textAlign: "right",
+  },
 });

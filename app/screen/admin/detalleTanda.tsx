@@ -1,5 +1,5 @@
-import React, { useCallback, useState } from "react";
-import { Alert, Platform, ScrollView, Share, StyleSheet, Text, View } from "react-native";
+﻿import React, { useCallback, useState } from "react";
+import { Alert, Platform, ScrollView, Share, StyleSheet, Text, useWindowDimensions, View } from "react-native";
 import { Stack, router, useFocusEffect, useLocalSearchParams } from "expo-router";
 import ResumenTandaAdminCard from "../../../components/indexadmin/ResumenTandaAdminCard";
 import InvitacionTandaCard from "../../../components/indexadmin/InvitacionTandaCard";
@@ -10,6 +10,8 @@ import {
   asignarTurnosTandaAdmin,
   eliminarTandaAdmin,
   finalizarTandaAdmin,
+  marcarTurnoEntregadoAdmin,
+  notificarEntregaTurnoAdmin,
 } from "../../../utils/api/admin/adminApi";
 import type { IntegranteItem, TandaItem } from "../../../utils/api/Tandas/tandasTypes";
 
@@ -50,7 +52,7 @@ export default function GestionTandaAdminScreen() {
       return;
     }
 
-    const mensaje = `Unete a la tanda ${tanda.nombre} con el codigo ${tanda.codigoInvitacion}\n${qrValue}`;
+    const mensaje = `Únete a la tanda ${tanda.nombre} con el código ${tanda.codigoInvitacion}\n${qrValue}`;
     await Share.share({ message: mensaje });
   };
 
@@ -60,7 +62,7 @@ export default function GestionTandaAdminScreen() {
     const ejecutar = async () => {
       try {
         await eliminarTandaAdmin(tanda._id);
-        Alert.alert("Exito", "La tanda fue eliminada correctamente", [
+        Alert.alert("Éxito", "La tanda fue eliminada correctamente", [
           { text: "OK", onPress: () => router.back() },
         ]);
       } catch (error: any) {
@@ -73,7 +75,7 @@ export default function GestionTandaAdminScreen() {
 
     if (Platform.OS === "web") {
       const confirmacion = globalThis.confirm?.(
-        "Esta accion borrara la tanda de forma permanente. Deseas continuar?"
+        "Esta acción borrará la tanda de forma permanente. ¿Deseas continuar?"
       );
       if (confirmacion) {
         ejecutar();
@@ -81,7 +83,7 @@ export default function GestionTandaAdminScreen() {
       return;
     }
 
-    Alert.alert("Eliminar tanda", "Esta accion borrara la tanda de forma permanente.", [
+    Alert.alert("Eliminar tanda", "Esta acción borrará la tanda de forma permanente.", [
       { text: "Cancelar", style: "cancel" },
       {
         text: "Eliminar",
@@ -98,7 +100,7 @@ export default function GestionTandaAdminScreen() {
       try {
         const respuesta = await finalizarTandaAdmin(tanda._id);
         setTanda(respuesta?.tanda || null);
-        Alert.alert("Exito", respuesta?.mensaje || "Tanda finalizada correctamente");
+        Alert.alert("Éxito", respuesta?.mensaje || "Tanda finalizada correctamente");
       } catch (error: any) {
         Alert.alert(
           "Error",
@@ -109,7 +111,7 @@ export default function GestionTandaAdminScreen() {
 
     if (Platform.OS === "web") {
       const confirmacion = globalThis.confirm?.(
-        "La tanda quedara marcada como finalizada. Deseas continuar?"
+        "La tanda quedará marcada como finalizada. ¿Deseas continuar?"
       );
       if (confirmacion) {
         ejecutar();
@@ -117,7 +119,7 @@ export default function GestionTandaAdminScreen() {
       return;
     }
 
-    Alert.alert("Finalizar tanda", "La tanda quedara marcada como finalizada.", [
+    Alert.alert("Finalizar tanda", "La tanda quedará marcada como finalizada.", [
       { text: "Cancelar", style: "cancel" },
       {
         text: "Finalizar",
@@ -133,7 +135,7 @@ export default function GestionTandaAdminScreen() {
       setGuardandoTurnos(true);
       const respuesta = await asignarTurnosTandaAdmin(tanda._id, payload);
       setTanda(respuesta?.tanda || null);
-      Alert.alert("Exito", respuesta?.mensaje || "Turnos actualizados correctamente");
+      Alert.alert("Éxito", respuesta?.mensaje || "Turnos actualizados correctamente");
     } catch (error: any) {
       Alert.alert(
         "Error",
@@ -141,6 +143,45 @@ export default function GestionTandaAdminScreen() {
       );
     } finally {
       setGuardandoTurnos(false);
+    }
+  };
+
+  const notificarEntrega = async (numeroTurno: number) => {
+    if (!tanda?._id) {
+      return;
+    }
+
+    try {
+      const respuesta = await notificarEntregaTurnoAdmin(tanda._id, numeroTurno);
+      Alert.alert(
+        "Éxito",
+        respuesta?.mensaje || "Se envió la notificación de entrega al usuario."
+      );
+    } catch (error: any) {
+      Alert.alert(
+        "Error",
+        error?.response?.data?.mensaje || "No se pudo enviar la notificación de entrega"
+      );
+    }
+  };
+
+  const marcarEntregado = async (numeroTurno: number) => {
+    if (!tanda?._id) {
+      return;
+    }
+
+    try {
+      const respuesta = await marcarTurnoEntregadoAdmin(tanda._id, numeroTurno);
+      await cargar();
+      Alert.alert(
+        "Éxito",
+        respuesta?.mensaje || "Se marcó el turno como entregado."
+      );
+    } catch (error: any) {
+      Alert.alert(
+        "Error",
+        error?.response?.data?.mensaje || "No se pudo marcar el turno como entregado"
+      );
     }
   };
 
@@ -154,54 +195,59 @@ export default function GestionTandaAdminScreen() {
       <Stack.Screen options={{ title: "Administrar Tanda" }} />
 
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        {error ? <Text style={styles.error}>{error}</Text> : null}
+        <View style={styles.contentWrapper}>
+          {error ? <Text style={styles.error}>{error}</Text> : null}
 
-        {tanda ? (
-          <>
-            <ResumenTandaAdminCard
-              nombre={tanda.nombre}
-              descripcion={tanda.descripcion}
-              pago={Number(tanda.pago || 0)}
-              participantes={Number(tanda.participantes || 0)}
-              fecha={tanda.fecha}
-              frecuencia={tanda.frecuencia}
-              estado={tanda.estado}
-              codigoInvitacion={tanda.codigoInvitacion}
-              onAdministrarIntegrantes={() => {
-                Alert.alert("Integrantes", "Desde aqui ya puedes ver el orden actual de integrantes.");
-              }}
-              onVerHistorial={() => router.push("/screen/admin/historialTandas")}
-              onFinalizar={confirmarFinalizar}
-              onEliminar={confirmarEliminar}
-              deshabilitarFinalizar={tanda.estado === false}
-            />
-
-            {tanda.codigoInvitacion ? (
-              <InvitacionTandaCard
+          {tanda ? (
+            <>
+              <ResumenTandaAdminCard
+                nombre={tanda.nombre}
+                descripcion={tanda.descripcion}
+                pago={Number(tanda.pago || 0)}
+                participantes={Number(tanda.participantes || 0)}
+                fecha={tanda.fecha}
+                frecuencia={tanda.frecuencia}
+                estado={tanda.estado}
                 codigoInvitacion={tanda.codigoInvitacion}
-                qrValue={qrValue}
-                onCompartir={compartirInvitacion}
+                onAdministrarIntegrantes={() => {
+                  Alert.alert("Integrantes", "Desde aquí ya puedes ver el orden actual de integrantes.");
+                }}
+                onVerHistorial={() => router.push("/screen/admin/historialTandas")}
+                onFinalizar={confirmarFinalizar}
+                onEliminar={confirmarEliminar}
+                deshabilitarFinalizar={tanda.estado === false}
               />
-            ) : null}
 
-            <IntegrantesAdminCard integrantes={integrantes} />
-            <TurnosAdminCard
-              turnos={Array.isArray(tanda.turnos) ? tanda.turnos : []}
-              integrantes={integrantes}
-              participantes={Number(tanda.participantes || 0)}
-              guardando={guardandoTurnos}
-              onAsignarManual={(integrantesOrdenados) =>
-                asignarTurnos({ integrantesOrdenados, aleatorio: false })
-              }
-              onAsignarAleatorio={() => asignarTurnos({ aleatorio: true })}
-            />
-          </>
-        ) : (
-          <View style={styles.emptyCard}>
-            <Text style={styles.emptyTitle}>No se encontro la tanda</Text>
-            <Text style={styles.emptyText}>Revisa que la tanda siga disponible.</Text>
-          </View>
-        )}
+              {tanda.codigoInvitacion ? (
+                <InvitacionTandaCard
+                  codigoInvitacion={tanda.codigoInvitacion}
+                  qrValue={qrValue}
+                  onCompartir={compartirInvitacion}
+                />
+              ) : null}
+
+              <IntegrantesAdminCard integrantes={integrantes} />
+              <TurnosAdminCard
+                turnos={Array.isArray(tanda.turnos) ? tanda.turnos : []}
+                turnosCobro={Array.isArray(tanda.turnosCobro) ? tanda.turnosCobro : []}
+                integrantes={integrantes}
+                participantes={Number(tanda.participantes || 0)}
+                guardando={guardandoTurnos}
+                onAsignarManual={(integrantesOrdenados) =>
+                  asignarTurnos({ integrantesOrdenados, aleatorio: false })
+                }
+                onAsignarAleatorio={() => asignarTurnos({ aleatorio: true })}
+                onNotificarEntrega={notificarEntrega}
+                onMarcarEntregado={marcarEntregado}
+              />
+            </>
+          ) : (
+            <View style={styles.emptyCard}>
+              <Text style={styles.emptyTitle}>No se encontró la tanda</Text>
+              <Text style={styles.emptyText}>Revisa que la tanda siga disponible.</Text>
+            </View>
+          )}
+        </View>
       </ScrollView>
     </View>
   );
@@ -213,8 +259,13 @@ const styles = StyleSheet.create({
     backgroundColor: "#f5f6fa",
   },
   content: {
-    padding: 16,
-    paddingBottom: 40,
+    width: "100%",
+    paddingHorizontal: 0,
+    paddingBottom: 120,
+  },
+  contentWrapper: {
+    flex: 1,
+    width: "100%",
   },
   error: {
     color: "#991b1b",
@@ -235,3 +286,13 @@ const styles = StyleSheet.create({
     color: "#4b5563",
   },
 });
+
+
+
+
+
+
+
+
+
+

@@ -1,5 +1,5 @@
 import React from "react";
-import { StyleSheet, ScrollView, Alert, ActivityIndicator } from "react-native";
+import { StyleSheet, ScrollView, Alert, ActivityIndicator, Text, View } from "react-native";
 import { router } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
@@ -8,18 +8,19 @@ import Notificacion from "../../../components/Confi_admin/Notificaciones";
 import TandasSoport from "../../../components/Confi_admin/Tandas_soport";
 import BotonCerrar from "../../../components/Confi_admin/BotonCerrar";
 import ProfileCard from "../../../components/Confi_admin/profileCard copy";
+import Item from "../../../components/Confi_admin/item";
 import ScreenHeader from "../../../components/ui/ScreenHeader";
-import { cerrarSesion } from "../../../utils/api/login-registrar/authStorage";
+import { useAuth } from "@/contexts/AuthContext";
 import { useAdminConfig } from "../../../hooks/useAdminConfig";
 
 export default function ConfigAdmin() {
   const tabBarHeight = useBottomTabBarHeight();
+  const { logout } = useAuth();
   const { perfil, preferencias, loading, actualizarPreferencias } = useAdminConfig();
 
   const salir = async () => {
-    await cerrarSesion();
-    Alert.alert("Sesion cerrada", "La sesion del administrador se cerro correctamente");
-    router.replace("/");
+    await logout();
+    Alert.alert("Sesión cerrada", "La sesión del administrador se cerró correctamente.");
   };
 
   return (
@@ -30,8 +31,8 @@ export default function ConfigAdmin() {
         showsVerticalScrollIndicator={false}
       >
         <ScreenHeader
-          title="Configuracion Admin"
-          subtitle="Controla tu cuenta y preferencias de administracion"
+          title="Configuración Admin"
+          subtitle="Controla tu cuenta y preferencias de administración"
         />
 
         {loading ? (
@@ -40,6 +41,23 @@ export default function ConfigAdmin() {
 
         <ProfileCard perfil={perfil} onPress={() => router.push("/screen/admin/perfil")} />
         <Gestion />
+        <View>
+          <Text style={styles.section}>CUENTA</Text>
+          <View style={styles.card}>
+            <Item
+              icon="mail-outline"
+              title="Cambiar correo"
+              subtitle="Actualiza el correo de acceso"
+              onPress={() => router.push("/screen/admin/cambiarCorreo")}
+            />
+            <Item
+              icon="lock-closed-outline"
+              title="Cambiar contraseña"
+              subtitle="Modifica tu contraseña actual"
+              onPress={() => router.push("/screen/admin/cambiarPassword")}
+            />
+          </View>
+        </View>
         <Notificacion
           notificacionesActivas={preferencias?.notificacionesActivas ?? true}
           onToggleNotificaciones={(value) => actualizarPreferencias({ notificacionesActivas: value })}
@@ -71,6 +89,19 @@ const styles = StyleSheet.create({
   },
   loader: {
     marginBottom: 12,
+  },
+  section: {
+    marginTop: 6,
+    marginBottom: 8,
+    fontWeight: "bold",
+    color: "#888",
+  },
+  card: {
+    backgroundColor: "#FFF",
+    borderRadius: 15,
+    padding: 10,
+    marginBottom: 10,
+    elevation: 2,
   },
 });
 

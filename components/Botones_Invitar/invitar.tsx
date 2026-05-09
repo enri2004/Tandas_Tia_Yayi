@@ -6,7 +6,7 @@ export default function Qr(){
     return(
         <View   style={styles.qr}>
         <QRCode
-        value="https://www.youtube.com/watch?v=QrKRccQvieA&list=RDEIJ8Wy1k_s0&index=12"
+        value="https://pagina-web-5394.onrender.com"
         size={250}
       
         />

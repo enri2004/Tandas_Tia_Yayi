@@ -36,10 +36,13 @@ export default function CardProgreso({
 
 const styles = StyleSheet.create({
   card: {
+    width: "100%",
     backgroundColor: "white",
-    margin: 20,
+    marginTop: 20,
+    marginHorizontal: 0,
+    marginBottom: 0,
     padding: 20,
-    borderRadius: 20,
+    borderRadius: 24,
     elevation: 3,
   },
   cardTitle: {

@@ -59,7 +59,7 @@ const styles = StyleSheet.create({
   botones:{
     flexDirection:"row",
     justifyContent:"space-between",
-    marginHorizontal:20
+    width:"100%",
   },
   boton:{
     width:"32%",
@@ -73,8 +73,10 @@ const styles = StyleSheet.create({
     fontWeight:"600"
   },
   botonPago:{
+    width:"100%",
     backgroundColor:"#22c55e",
-    margin:20,
+    marginHorizontal:0,
+    marginBottom:20,
     padding:18,
     borderRadius:15,
     alignItems:"center",

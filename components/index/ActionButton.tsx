@@ -1,35 +1,34 @@
 import React, { ReactNode } from "react";
-import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
-import { useResponsive } from "../../hooks/useResponsive";
+import { View, Text, TouchableOpacity, StyleSheet, useWindowDimensions } from "react-native";
 
-// 👇 tipos
 type Props = {
   icon: ReactNode;
   text: string;
   color: string;
-  onPress?:()=>void;
+  onPress?: () => void;
 };
-export default function ActionButton({ icon, text, color,onPress }: Props) {
-  const { width, isTablet, isDesktop, bodySize } = useResponsive();
-  const canFitFourInline = width >= 360;
-  const itemWidth = isDesktop
-    ? width * 0.12
-    : isTablet
-    ? width * 0.18
-    : canFitFourInline
-    ? width * 0.22
-    : width * 0.42;
-  const iconSize = isDesktop ? width * 0.065 : isTablet ? width * 0.11 : width * 0.15;
+
+export default function ActionButton({ icon, text, color, onPress }: Props) {
+  const { width } = useWindowDimensions();
+  const isCompact = width < 390;
+  const isTabletOrWeb = width >= 768;
 
   return (
-    <TouchableOpacity style={[styles.action, { width: itemWidth }]} onPress={onPress}>
-      <View style={[styles.icon, { backgroundColor: color, width: iconSize, height: iconSize }]}>
+    <TouchableOpacity style={styles.action} onPress={onPress} activeOpacity={0.85}>
+      <View
+        style={[
+          styles.icon,
+          {
+            backgroundColor: color,
+            width: isTabletOrWeb ? 64 : isCompact ? 54 : 58,
+            height: isTabletOrWeb ? 64 : isCompact ? 54 : 58,
+            borderRadius: isTabletOrWeb ? 32 : isCompact ? 27 : 29,
+          },
+        ]}
+      >
         {icon}
       </View>
-      <Text
-        style={[styles.text, { fontSize: bodySize }]}
-        numberOfLines={2}
-      >
+      <Text style={[styles.text, { fontSize: isCompact ? 11 : 12 }]} numberOfLines={2}>
         {text}
       </Text>
     </TouchableOpacity>
@@ -37,19 +36,20 @@ export default function ActionButton({ icon, text, color,onPress }: Props) {
 }
 
 const styles = StyleSheet.create({
-  action:{
-    alignItems:"center",
+  action: {
+    flex: 1,
+    alignItems: "center",
     justifyContent: "flex-start",
   },
-  icon:{
-    borderRadius:100,
-    justifyContent:"center",
-    alignItems:"center"
+  icon: {
+    justifyContent: "center",
+    alignItems: "center",
   },
-  text:{
-    textAlign:"center",
-    marginTop:6,
+  text: {
+    textAlign: "center",
+    marginTop: 6,
     width: "100%",
     minHeight: 32,
-  }
+    color: "#111827",
+  },
 });

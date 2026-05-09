@@ -1,9 +1,13 @@
-import ModalMensaje from "@/components/modal_alert/modal";
+﻿import ModalMensaje from "@/components/modal_alert/modal";
 import SocialAuthButtons from "@/components/login/SocialAuthButtons";
 import Botones from "@/components/ui/bontones";
-import Input from "@/components/ui/input";
+import Input from "@/components/ui/Input";
+import { useAuth } from "@/contexts/AuthContext";
 import { registrarUsuario } from "@/utils/api/login-registrar/registrar";
-import { obtenerMensajeSocialAuth } from "@/utils/api/login-registrar/socialAuth";
+import {
+  obtenerMensajeSocialAuth,
+  resolverRutaPorRol,
+} from "@/utils/api/login-registrar/socialAuth";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
@@ -28,6 +32,7 @@ type ErroresFormulario = {
 
 export default function RegistroScreen() {
   const router = useRouter();
+  const { signIn } = useAuth();
   const { width, height } = useWindowDimensions();
   const insets = useSafeAreaInsets();
 
@@ -107,16 +112,16 @@ export default function RegistroScreen() {
     if (!nombre.trim()) nuevosErrores.nombre = "El nombre es obligatorio";
     if (!edad.trim()) nuevosErrores.edad = "La edad es obligatoria";
     else if (Number.isNaN(Number(edad.trim()))) {
-      nuevosErrores.edad = "La edad debe ser un numero valido";
+      nuevosErrores.edad = "La edad debe ser un número válido";
     }
 
     if (!correo.trim()) nuevosErrores.correo = "El correo es obligatorio";
     else if (!formatoCorreo.test(correoNormalizado)) {
-      nuevosErrores.correo = "Ingresa un correo valido";
+      nuevosErrores.correo = "Ingresa un correo válido";
     }
     if (!usuario.trim()) nuevosErrores.usuario = "El usuario es obligatorio";
     if (password.trim() && password.trim().length < 6) {
-      nuevosErrores.password = "La contrasena debe tener al menos 6 caracteres";
+      nuevosErrores.password = "La contraseña debe tener al menos 6 caracteres";
     }
     if (!password.trim()) nuevosErrores.password = "La contraseña es obligatoria";
     if (!tipoUsuario) nuevosErrores.tipoUsuario = "Selecciona una opción";
@@ -138,7 +143,17 @@ export default function RegistroScreen() {
       {
         setLoading,
         limpiarFormulario,
-        onSuccess: () => {
+        onSuccess: async (respuesta?: any) => {
+          if (respuesta?.token && respuesta?.usuario) {
+            await signIn({
+              token: respuesta.token,
+              usuario: respuesta.usuario,
+            });
+
+            router.replace(resolverRutaPorRol(respuesta.usuario.rol));
+            return;
+          }
+
           setModalTitulo("Registro exitoso");
           setModalTexto("Tu cuenta ha sido creada correctamente");
           setModalVisible(true);
@@ -210,7 +225,8 @@ export default function RegistroScreen() {
                   ]}
                 >
                   <Input
-                    placeholder="nombre"
+                    label="Nombre"
+                    placeholder="Escribe tu nombre"
                     value={nombre}
                     onChange={(text: string) => {
                       setNombre(text);
@@ -229,7 +245,8 @@ export default function RegistroScreen() {
                   ]}
                 >
                   <Input
-                    placeholder="edad"
+                    label="Edad"
+                    placeholder="Escribe tu edad"
                     value={edad}
                     onChange={(text: string) => {
                       setEdad(text);
@@ -248,7 +265,8 @@ export default function RegistroScreen() {
                   ]}
                 >
                   <Input
-                    placeholder="correo"
+                    label="Correo"
+                    placeholder="Escribe tu correo"
                     value={correo}
                     onChange={(text: string) => {
                       setCorreo(text);
@@ -267,7 +285,8 @@ export default function RegistroScreen() {
                   ]}
                 >
                   <Input
-                    placeholder="usuario"
+                    label="Usuario"
+                    placeholder="Elige un usuario"
                     value={usuario}
                     onChange={(text: string) => {
                       setUsuario(text);
@@ -286,7 +305,8 @@ export default function RegistroScreen() {
                   ]}
                 >
                   <Input
-                    placeholder="contraseña"
+                    label="Contraseña"
+                    placeholder="Escribe tu contraseña"
                     value={password}
                     onChange={(text: string) => {
                       setPassword(text);
@@ -578,4 +598,15 @@ const styles = StyleSheet.create({
     fontWeight: "700",
   },
 });
+
+
+
+
+
+
+
+
+
+
+
 

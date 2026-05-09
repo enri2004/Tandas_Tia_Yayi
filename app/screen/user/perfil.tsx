@@ -5,7 +5,6 @@ import {
   ScrollView,
   StyleSheet,
   Text,
-  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
@@ -14,10 +13,15 @@ import { useFocusEffect, router } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
 import PerfilHeader from "../../../components/amigos/PerfilHeader";
 import PerfilImageActions from "../../../components/amigos/PerfilImageActions";
+import Input from "../../../components/ui/Input";
 import {
   actualizarUsuarioGuardadoLocal,
   obtenerUsuarioGuardado,
 } from "../../../utils/api/login-registrar/authStorage";
+import {
+  limpiarPerfilIncompletoPospuestoHasta,
+  perfilEstaIncompleto,
+} from "../../../utils/api/login-registrar/profileModalStorage";
 import {
   cargarMiPerfil,
   guardarMiPerfil,
@@ -31,6 +35,19 @@ const emptyForm = {
   usuario: "",
   telefono: "",
   direccion: "",
+};
+
+const obtenerEstadoPerfil = (data: {
+  edad?: number | string | null;
+  telefono?: string | null;
+  direccion?: string | null;
+}) => {
+  const incompleto = perfilEstaIncompleto(data);
+
+  return {
+    perfilActualizado: !incompleto,
+    mostrarModalActualizarDatos: incompleto,
+  };
 };
 
 export default function MiPerfilScreen() {
@@ -85,6 +102,12 @@ export default function MiPerfilScreen() {
 
     try {
       setSaving(true);
+      const estadoPerfil = obtenerEstadoPerfil({
+        edad: form.edad,
+        telefono: form.telefono,
+        direccion: form.direccion,
+      });
+
       const actualizado = await guardarMiPerfil(perfil.id, {
         nombre: form.nombre,
         edad: form.edad,
@@ -92,18 +115,28 @@ export default function MiPerfilScreen() {
         usuario: form.usuario,
         telefono: form.telefono,
         direccion: form.direccion,
+        perfilActualizado: estadoPerfil.perfilActualizado,
+        mostrarModalActualizarDatos: estadoPerfil.mostrarModalActualizarDatos,
       });
 
       setPerfil(actualizado);
       setEditando(false);
+      if (estadoPerfil.perfilActualizado) {
+        await limpiarPerfilIncompletoPospuestoHasta();
+      }
       await actualizarUsuarioGuardadoLocal({
         nombre: actualizado.nombre,
         correo: actualizado.correo,
         usuario: actualizado.usuario,
         imagen: actualizado.imagen,
         fotoPerfil: actualizado.fotoPerfil || actualizado.imagen,
-        perfilActualizado: actualizado.perfilActualizado,
-        mostrarModalActualizarDatos: actualizado.mostrarModalActualizarDatos,
+        edad: actualizado.edad,
+        telefono: actualizado.telefono,
+        direccion: actualizado.direccion,
+        perfilActualizado:
+          actualizado.perfilActualizado ?? estadoPerfil.perfilActualizado,
+        mostrarModalActualizarDatos:
+          actualizado.mostrarModalActualizarDatos ?? estadoPerfil.mostrarModalActualizarDatos,
       });
 
       Alert.alert("Exito", "Perfil actualizado correctamente");
@@ -122,6 +155,11 @@ export default function MiPerfilScreen() {
 
     try {
       setUploadingImage(true);
+      const estadoPerfil = obtenerEstadoPerfil({
+        edad: perfil.edad,
+        telefono: perfil.telefono,
+        direccion: perfil.direccion,
+      });
       const formData = new FormData();
       formData.append("nombre", perfil.nombre || "");
       formData.append("edad", perfil.edad === undefined || perfil.edad === null ? "" : String(perfil.edad));
@@ -130,6 +168,11 @@ export default function MiPerfilScreen() {
       formData.append("telefono", perfil.telefono || "");
       formData.append("direccion", perfil.direccion || "");
       formData.append("tipoUsuario", perfil.tipoUsuario || "");
+      formData.append("perfilActualizado", String(estadoPerfil.perfilActualizado));
+      formData.append(
+        "mostrarModalActualizarDatos",
+        String(estadoPerfil.mostrarModalActualizarDatos)
+      );
       formData.append("imagen", {
         uri,
         name: `perfil-${Date.now()}.jpg`,
@@ -138,14 +181,22 @@ export default function MiPerfilScreen() {
 
       const actualizado = await guardarMiPerfil(perfil.id, formData);
       setPerfil(actualizado);
+      if (estadoPerfil.perfilActualizado) {
+        await limpiarPerfilIncompletoPospuestoHasta();
+      }
       await actualizarUsuarioGuardadoLocal({
         nombre: actualizado.nombre,
         correo: actualizado.correo,
         usuario: actualizado.usuario,
         imagen: actualizado.imagen,
         fotoPerfil: actualizado.fotoPerfil || actualizado.imagen,
-        perfilActualizado: actualizado.perfilActualizado,
-        mostrarModalActualizarDatos: actualizado.mostrarModalActualizarDatos,
+        edad: actualizado.edad,
+        telefono: actualizado.telefono,
+        direccion: actualizado.direccion,
+        perfilActualizado:
+          actualizado.perfilActualizado ?? estadoPerfil.perfilActualizado,
+        mostrarModalActualizarDatos:
+          actualizado.mostrarModalActualizarDatos ?? estadoPerfil.mostrarModalActualizarDatos,
       });
       Alert.alert("Exito", "Foto de perfil actualizada correctamente");
     } catch (error: any) {
@@ -211,7 +262,11 @@ export default function MiPerfilScreen() {
 
   return (
     <SafeAreaView style={styles.safe}>
-      <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        style={styles.container}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+      >
         <PerfilHeader
           perfil={perfil}
           subtitle={`${perfil.totalAmigos || 0} amigos registrados`}
@@ -251,15 +306,27 @@ export default function MiPerfilScreen() {
             { key: "direccion", label: "Direccion" },
           ].map((campo) => (
             <View key={campo.key} style={styles.fieldBlock}>
-              <Text style={styles.label}>{campo.label}</Text>
-              <TextInput
-                style={[styles.input, !editando && styles.inputDisabled]}
+              <Input
+                label={campo.label}
                 editable={editando}
                 value={form[campo.key as keyof typeof form]}
-                onChangeText={(value) =>
+                onChange={(value: string) =>
                   setForm((prev) => ({ ...prev, [campo.key]: value }))
                 }
                 keyboardType={campo.key === "edad" ? "numeric" : "default"}
+                icon={
+                  campo.key === "correo"
+                    ? "mail-outline"
+                    : campo.key === "telefono"
+                    ? "call-outline"
+                    : campo.key === "direccion"
+                    ? "location-outline"
+                    : campo.key === "edad"
+                    ? "calendar-outline"
+                    : "person-outline"
+                }
+                containerStyle={styles.profileInput}
+                inputStyle={!editando ? styles.inputDisabled : undefined}
               />
             </View>
           ))}
@@ -338,17 +405,13 @@ const styles = StyleSheet.create({
   fieldBlock: {
     marginBottom: 12,
   },
+  profileInput: {
+    marginTop: 2,
+  },
   label: {
     color: "#6b7280",
     marginBottom: 6,
     fontWeight: "600",
-  },
-  input: {
-    backgroundColor: "#f9fafb",
-    borderRadius: 12,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    color: "#111827",
   },
   inputDisabled: {
     color: "#4b5563",

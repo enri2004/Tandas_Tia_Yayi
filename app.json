@@ -8,6 +8,11 @@
     "scheme": "tandasapp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/images/logo.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#FFFFFF"
+    },
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#8C5A3C",
@@ -41,7 +46,8 @@
         "expo-splash-screen",
         {
           "backgroundColor": "#FFFFFF",
-          "image": "./assets/images/splash-icon.png",
+          "image": "./assets/images/logo.png",
+          "resizeMode": "contain",
           "dark": {
             "backgroundColor": "#000000"
           }
@@ -61,8 +67,7 @@
       "expo-web-browser"
     ],
     "experiments": {
-      "typedRoutes": true,
-      "reactCompiler": true
+      "typedRoutes": true
     },
     "extra": {
       "router": {},

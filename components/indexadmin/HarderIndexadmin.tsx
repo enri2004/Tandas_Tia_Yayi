@@ -1,7 +1,7 @@
 import React from "react";
 import { View, Text, StyleSheet, Pressable } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { router } from "expo-router";
+import { router, useRouter } from "expo-router";
 import { useResponsive } from "../../hooks/useResponsive";
 import UserAvatar from "../ui/UserAvatar";
 
@@ -16,12 +16,15 @@ export default function HeaderIndexAdmin({
   notificacionesSinLeer = 0,
   fotoPerfil = "",
 }: Props) {
+  const navigation = useRouter();
   const { titleSize, subtitleSize, isSmallPhone } = useResponsive();
 
   return (
     <View style={styles.container}>
       <View style={styles.infoContainer}>
-        <UserAvatar uri={fotoPerfil} size={56} />
+        <Pressable onPress={() => navigation.push("/screen/admin/perfil")}>
+          <UserAvatar uri={fotoPerfil} size={56} />
+        </Pressable>
 
         <View style={styles.textBlock}>
           <Text style={[styles.title, { fontSize: titleSize }]}>Hola, {adminName}</Text>

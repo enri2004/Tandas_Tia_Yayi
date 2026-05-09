@@ -6,15 +6,14 @@ import { router, useFocusEffect } from "expo-router";
 import ProfileCard from "../../../components/Confi/profileCard";
 import OptionItem from "../../../components/Confi/optionItem";
 import ScreenHeader from "../../../components/ui/ScreenHeader";
-import {
-  cerrarSesion,
-  obtenerUsuarioGuardado,
-} from "../../../utils/api/login-registrar/authStorage";
+import { useAuth } from "@/contexts/AuthContext";
+import { obtenerUsuarioGuardado } from "../../../utils/api/login-registrar/authStorage";
 import { cargarMiPerfil } from "../../../utils/api/amigos/amigosService";
 import { Usuario } from "../../../utils/api/amigos/amigosTypes";
 
 export default function ConfiguracionScreen() {
   const [perfil, setPerfil] = useState<Partial<Usuario> | null>(null);
+  const { logout } = useAuth();
 
   useFocusEffect(
     useCallback(() => {
@@ -34,16 +33,15 @@ export default function ConfiguracionScreen() {
   );
 
   const salir = async () => {
-    await cerrarSesion();
-    Alert.alert("Sesion cerrada", "Tu sesion se cerro correctamente");
-    router.replace("/");
+    await logout();
+    Alert.alert("Sesión cerrada", "Tu sesión se cerró correctamente.");
   };
 
   return (
     <SafeAreaView style={styles.safe} edges={["top", "left", "right"]}>
       <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
         <ScreenHeader
-          title="Configuracion"
+          title="Configuración"
           subtitle="Ajusta tu cuenta y preferencias"
         />
         <ProfileCard
@@ -51,7 +49,7 @@ export default function ConfiguracionScreen() {
           onPress={() => router.push("/screen/user/perfil")}
         />
 
-        <Text style={styles.section}>PERFIL</Text>
+        <Text style={styles.section}>Perfil</Text>
         <OptionItem
           icon="person-outline"
           text="Mi perfil"
@@ -64,7 +62,7 @@ export default function ConfiguracionScreen() {
         />
         <OptionItem
           icon="lock-closed-outline"
-          text="Cambiar contrasena"
+          text="Cambiar contraseña"
           onPress={() => router.push("/screen/user/cambiarPassword")}
         />
         <OptionItem
@@ -73,17 +71,17 @@ export default function ConfiguracionScreen() {
           onPress={() => router.push("/screen/user/solicitudesAmistad")}
         />
 
-        <Text style={styles.section}>NOTIFICACIONES</Text>
+        <Text style={styles.section}>Notificaciones</Text>
         <OptionItem
           icon="volume-high-outline"
           text="Sonidos"
           onPress={() => router.push("/screen/user/sonidos")}
         />
 
-        <Text style={styles.section}>TANDAS</Text>
+        <Text style={styles.section}>Tandas</Text>
         <OptionItem
           icon="card-outline"
-          text="Metodos de pago"
+          text="Métodos de pago"
           onPress={() => router.push("/screen/user/metodosPago")}
         />
         <OptionItem
@@ -97,7 +95,7 @@ export default function ConfiguracionScreen() {
           onPress={() => router.push("/screen/user/privacidad")}
         />
 
-        <Text style={styles.section}>SOPORTE</Text>
+        <Text style={styles.section}>Soporte</Text>
         <OptionItem
           icon="help-circle-outline"
           text="Ayuda"
@@ -115,7 +113,7 @@ export default function ConfiguracionScreen() {
         />
 
         <TouchableOpacity style={styles.logout} onPress={salir}>
-          <Text style={styles.logoutText}>Cerrar sesion</Text>
+          <Text style={styles.logoutText}>Cerrar sesión</Text>
         </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>

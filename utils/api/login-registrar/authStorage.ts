@@ -1,15 +1,19 @@
 import * as SecureStore from "expo-secure-store";
 import { Platform } from "react-native";
 
-type UsuarioGuardado = {
+export type UsuarioGuardado = {
   id: string;
   nombre: string;
   correo: string;
   usuario?: string;
-  rol: "admin" | "usuario";
+  rol: "admin" | "usuario" | null;
   tipoUsuario?: string;
   imagen?: string;
   fotoPerfil?: string;
+  edad?: number | null;
+  telefono?: string;
+  direccion?: string;
+  proveedorAuth?: string;
   perfilActualizado?: boolean;
   mostrarModalActualizarDatos?: boolean;
 };
@@ -21,13 +25,13 @@ export const guardarSesion = async (data: {
   if (Platform.OS === "web") {
     localStorage.setItem("token", data.token);
     localStorage.setItem("usuario", JSON.stringify(data.usuario));
-    localStorage.setItem("rol", data.usuario.rol);
+    localStorage.setItem("rol", data.usuario.rol || "");
     return;
   }
 
   await SecureStore.setItemAsync("token", data.token);
   await SecureStore.setItemAsync("usuario", JSON.stringify(data.usuario));
-  await SecureStore.setItemAsync("rol", data.usuario.rol);
+  await SecureStore.setItemAsync("rol", data.usuario.rol || "");
 };
 
 export const guardarExpoPushTokenLocal = async (expoPushToken: string) => {

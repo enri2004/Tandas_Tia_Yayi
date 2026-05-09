@@ -1,34 +1,74 @@
+import { Ionicons } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
 import React from "react";
-import { View, Text } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import { Text, View, useWindowDimensions } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useResponsive } from "../../../hooks/useResponsive";
+
+type TabItemProps = {
+  color: string;
+  icon: React.ReactNode;
+  label: string;
+  fontSize: number;
+};
+
+function TabItem({ color, icon, label, fontSize }: TabItemProps) {
+  return (
+    <View
+      style={{
+        alignItems: "center",
+        justifyContent: "center",
+        minWidth: 54,
+      }}
+    >
+      {icon}
+      <Text
+        numberOfLines={1}
+        adjustsFontSizeToFit
+        style={{
+          color,
+          fontSize,
+          marginTop: 2,
+          textAlign: "center",
+        }}
+      >
+        {label}
+      </Text>
+    </View>
+  );
+}
 
 export default function TabLayout() {
   const insets = useSafeAreaInsets();
-  const { isSmallPhone, compactLabelSize } = useResponsive();
-  const tabBarHeight = (isSmallPhone ? 64 : 68) + Math.max(insets.bottom, 8);
-  const iconSize = isSmallPhone ? 22 : 24;
-  const labelWidth = isSmallPhone ? 58 : 66;
+  const { width } = useWindowDimensions();
+  const isSmall = width < 380;
+  const tabHeight = (isSmall ? 78 : 72) + insets.bottom;
+  const iconSize = isSmall ? 22 : 24;
+  const labelSize = isSmall ? 10 : 12;
 
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
         tabBarShowLabel: false,
+        tabBarActiveTintColor: "#59008c",
+        tabBarInactiveTintColor: "gray",
         tabBarStyle: {
-          height: tabBarHeight,
-          paddingBottom: Math.max(insets.bottom, 8),
+          height: tabHeight,
           paddingTop: 6,
-          backgroundColor: "white",
-          borderTopWidth: 0,
+          paddingBottom: Math.max(insets.bottom, 8),
+          backgroundColor: "#fff",
+          borderTopWidth: 1,
+          borderTopColor: "#E5E7EB",
         },
         tabBarItemStyle: {
           flex: 1,
+          height: tabHeight - insets.bottom,
           justifyContent: "center",
           alignItems: "center",
-          paddingHorizontal: 2,
+          paddingVertical: 4,
+        },
+        tabBarIconStyle: {
+          marginBottom: 2,
         },
         sceneStyle: {
           backgroundColor: "#f5f6fa",
@@ -38,134 +78,88 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          tabBarIcon: ({ focused }) => (
-            <View style={{ alignItems: "center", justifyContent: "center" }}>
-              <Ionicons
-                name={focused ? "home" : "home-outline"}
-                color={focused ? "#59008c" : "gray"}
-                size={iconSize}
-              />
-              <Text
-                numberOfLines={2}
-                style={{
-                  color: focused ? "#59008c" : "gray",
-                  fontSize: compactLabelSize,
-                  marginTop: 4,
-                  width: labelWidth,
-                  textAlign: "center",
-                }}
-              >
-                Home
-              </Text>
-            </View>
+          title: "Home",
+          tabBarIcon: ({ color, focused }) => (
+            <TabItem
+              color={color}
+              label="Home"
+              fontSize={labelSize}
+              icon={<Ionicons name={focused ? "home" : "home-outline"} color={color} size={iconSize} />}
+            />
           ),
         }}
       />
-
       <Tabs.Screen
         name="tandas"
         options={{
-          tabBarIcon: ({ focused }) => (
-            <View style={{ alignItems: "center", justifyContent: "center" }}>
-              <Ionicons
-                name={focused ? "layers" : "layers-outline"}
-                color={focused ? "#59008c" : "gray"}
-                size={iconSize}
-              />
-              <Text
-                numberOfLines={2}
-                style={{
-                  color: focused ? "#59008c" : "gray",
-                  fontSize: compactLabelSize,
-                  marginTop: 4,
-                  width: labelWidth,
-                  textAlign: "center",
-                }}
-              >
-                Tandas
-              </Text>
-            </View>
+          title: "Tandas",
+          tabBarIcon: ({ color, focused }) => (
+            <TabItem
+              color={color}
+              label="Tandas"
+              fontSize={labelSize}
+              icon={
+                <Ionicons
+                  name={focused ? "layers" : "layers-outline"}
+                  color={color}
+                  size={iconSize}
+                />
+              }
+            />
           ),
         }}
       />
-
       <Tabs.Screen
         name="pagos"
         options={{
-          tabBarIcon: ({ focused }) => (
-            <View style={{ alignItems: "center", justifyContent: "center" }}>
-              <Ionicons
-                name={focused ? "card" : "card-outline"}
-                color={focused ? "#59008c" : "gray"}
-                size={iconSize}
-              />
-              <Text
-                numberOfLines={2}
-                style={{
-                  color: focused ? "#59008c" : "gray",
-                  fontSize: compactLabelSize,
-                  marginTop: 4,
-                  width: labelWidth,
-                  textAlign: "center",
-                }}
-              >
-                Pagos
-              </Text>
-            </View>
+          title: "Pagos",
+          tabBarIcon: ({ color, focused }) => (
+            <TabItem
+              color={color}
+              label="Pagos"
+              fontSize={labelSize}
+              icon={<Ionicons name={focused ? "card" : "card-outline"} color={color} size={iconSize} />}
+            />
           ),
         }}
       />
-
       <Tabs.Screen
         name="chat"
         options={{
-          tabBarIcon: ({ focused }) => (
-            <View style={{ alignItems: "center", justifyContent: "center" }}>
-              <Ionicons
-                name={focused ? "mail-unread" : "mail-unread-outline"}
-                color={focused ? "#59008c" : "gray"}
-                size={iconSize}
-              />
-              <Text
-                numberOfLines={2}
-                style={{
-                  color: focused ? "#59008c" : "gray",
-                  fontSize: compactLabelSize,
-                  marginTop: 4,
-                  width: labelWidth,
-                  textAlign: "center",
-                }}
-              >
-                Solicitudes
-              </Text>
-            </View>
+          title: "Solicitudes",
+          tabBarIcon: ({ color, focused }) => (
+            <TabItem
+              color={color}
+              label="Solicitudes"
+              fontSize={labelSize}
+              icon={
+                <Ionicons
+                  name={focused ? "mail-unread" : "mail-unread-outline"}
+                  color={color}
+                  size={iconSize}
+                />
+              }
+            />
           ),
         }}
       />
-
       <Tabs.Screen
         name="Confi"
         options={{
-          tabBarIcon: ({ focused }) => (
-            <View style={{ alignItems: "center", justifyContent: "center" }}>
-              <Ionicons
-                name={focused ? "person-circle" : "person-circle-outline"}
-                color={focused ? "#59008c" : "gray"}
-                size={iconSize}
-              />
-              <Text
-                numberOfLines={2}
-                style={{
-                  color: focused ? "#59008c" : "gray",
-                  fontSize: compactLabelSize,
-                  marginTop: 4,
-                  width: labelWidth,
-                  textAlign: "center",
-                }}
-              >
-                Perfil
-              </Text>
-            </View>
+          title: "Perfil",
+          tabBarIcon: ({ color, focused }) => (
+            <TabItem
+              color={color}
+              label="Perfil"
+              fontSize={labelSize}
+              icon={
+                <Ionicons
+                  name={focused ? "person-circle" : "person-circle-outline"}
+                  color={color}
+                  size={iconSize}
+                />
+              }
+            />
           ),
         }}
       />

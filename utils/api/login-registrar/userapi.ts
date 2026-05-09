@@ -5,7 +5,7 @@ import API from "@/servers/Axios";
 ========================= */
 
 export type TipoUsuario = "crear" | "unirse";
-export type RolUsuario = "admin" | "usuario";
+export type RolUsuario = "admin" | "usuario" | null;
 
 /* =========================
    CREAR USUARIO
@@ -22,6 +22,32 @@ export const loginUsuario = async (correo: string, password: string) => {
     password,
   });
 
+  return response.data;
+};
+
+export const loginSocialUsuario = async (data: {
+  nombre: string;
+  correo: string;
+  fotoPerfil?: string;
+  proveedorAuth: "google" | "facebook";
+  facebookId?: string;
+}) => {
+  const response = await API.post("/User/auth/social", data);
+  return response.data;
+};
+
+export const actualizarRolUsuario = async (rol: "admin" | "user" | "usuario") => {
+  const response = await API.put("/User/rol", { rol });
+  return response.data;
+};
+
+export const obtenerPerfilUsuario = async (id: string) => {
+  const response = await API.get(`/User/perfil/${id}`);
+  return response.data;
+};
+
+export const obtenerUsuarioActual = async () => {
+  const response = await API.get("/User/me");
   return response.data;
 };
 

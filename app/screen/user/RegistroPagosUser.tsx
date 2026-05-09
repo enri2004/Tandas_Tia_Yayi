@@ -1,9 +1,8 @@
-import React, { useEffect, useMemo, useState } from "react";
+﻿import React, { useEffect, useMemo, useState } from "react";
 import {
   View,
   Text,
   StyleSheet,
-  TextInput,
   ScrollView,
   Alert,
   Pressable,
@@ -14,6 +13,7 @@ import Select from "../../../components/Pagos/Select";
 import MetodoPago from "../../../components/Pagos/MetodoPago";
 import UploadImage from "../../../components/Pagos/UploadImage";
 import ScreenHeader from "../../../components/ui/ScreenHeader";
+import Input from "../../../components/ui/Input";
 import { obtenerUsuarioGuardado } from "@/utils/api/login-registrar/authStorage";
 import { obtenerTandasPorUsuario } from "@/utils/api/Tandas/tandasApi";
 import { crearComprobante } from "@/utils/api/comprobantes/comprobantesApi";
@@ -38,6 +38,10 @@ export default function RegistroPagoScreen() {
     () => tandas.map((item) => item.nombre),
     [tandas]
   );
+  const periodoActual =
+    tandaSeleccionada?.calendarioPagos?.find((item) => item.estado !== "pagado") ||
+    tandaSeleccionada?.calendarioPagos?.[0] ||
+    null;
 
   useEffect(() => {
     const cargarTandas = async () => {
@@ -58,9 +62,9 @@ export default function RegistroPagoScreen() {
   }, []);
 
   const seleccionarImagen = () => {
-    Alert.alert("Imagen", "Selecciona una opcion", [
-      { text: "Camara", onPress: abrirCamara },
-      { text: "Galeria", onPress: abrirGaleria },
+    Alert.alert("Imagen", "Selecciona una opción", [
+      { text: "Cámara", onPress: abrirCamara },
+      { text: "Galería", onPress: abrirGaleria },
       { text: "Cancelar", style: "cancel" },
     ]);
   };
@@ -107,7 +111,7 @@ export default function RegistroPagoScreen() {
       const usuario = await obtenerUsuarioGuardado();
 
       if (!usuario?.id) {
-        Alert.alert("Error", "No se encontro la sesion del usuario");
+        Alert.alert("Error", "No se encontró la sesión del usuario");
         return;
       }
 
@@ -132,6 +136,7 @@ export default function RegistroPagoScreen() {
       formData.append("tandaId", tandaSeleccionada._id);
       formData.append("usuarioId", usuario.id);
       formData.append("monto", monto);
+      formData.append("periodoPago", String(periodoActual?.numeroPago || 1));
       formData.append("metodoPago", metodo);
       formData.append("banco", banco);
       formData.append("clabe", clabe);
@@ -152,8 +157,8 @@ export default function RegistroPagoScreen() {
       await crearComprobante(formData);
 
       Alert.alert(
-        "Exito",
-        "Comprobante enviado. Se genero historial, notificacion y push para el admin."
+        "Éxito",
+        "Comprobante enviado. Se generó historial, notificación y push para el admin."
       );
 
       limpiarFormulario();
@@ -171,7 +176,7 @@ export default function RegistroPagoScreen() {
     <SafeAreaView style={styles.safe} edges={["top", "left", "right"]}>
       <ScreenHeader
         title="Registrar Pago"
-        subtitle="Este flujo genera historial y notificacion automatica."
+        subtitle="Este flujo genera historial y notificación automática."
       />
 
       <View style={styles.container}>
@@ -192,35 +197,95 @@ export default function RegistroPagoScreen() {
         <ScrollView
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingBottom: 24 }}
+          keyboardShouldPersistTaps="handled"
         >
-          <TextInput
-            style={styles.input}
-            placeholder="Monto"
+          <Input
+            label="Monto"
+            placeholder="Captura el monto"
             value={monto}
-            onChangeText={setMonto}
+            onChange={setMonto}
             keyboardType="numeric"
+            icon="cash-outline"
+            containerStyle={styles.inputBlock}
           />
+
+          {tandaSeleccionada ? (
+            <View style={styles.infoCard}>
+              <Text style={styles.infoTitle}>Datos de pago</Text>
+              <Text style={styles.infoLine}>
+                Monto sugerido: ${Number(tandaSeleccionada.montoPago || tandaSeleccionada.pago || 0)} MXN
+              </Text>
+              <Text style={styles.infoLine}>
+                Fecha límite: {periodoActual?.fechaPagoTexto || tandaSeleccionada.fechaInicio || "Sin fecha"}
+              </Text>
+              <Text style={styles.infoLine}>
+                Estado del periodo: {periodoActual?.estado || "pendiente"}
+              </Text>
+              {tandaSeleccionada.claveInterbancaria ? (
+                <Text style={styles.infoLine}>
+                  Clave interbancaria: {tandaSeleccionada.claveInterbancaria}
+                </Text>
+              ) : null}
+              {tandaSeleccionada.nombreBeneficiario ? (
+                <Text style={styles.infoLine}>
+                  Beneficiario: {tandaSeleccionada.nombreBeneficiario}
+                </Text>
+              ) : null}
+              {tandaSeleccionada.banco ? (
+                <Text style={styles.infoLine}>Banco: {tandaSeleccionada.banco}</Text>
+              ) : null}
+              {tandaSeleccionada.conceptoPago ? (
+                <Text style={styles.infoLine}>Concepto: {tandaSeleccionada.conceptoPago}</Text>
+              ) : null}
+              {!tandaSeleccionada.claveInterbancaria &&
+              !tandaSeleccionada.nombreBeneficiario &&
+              !tandaSeleccionada.banco &&
+              !tandaSeleccionada.conceptoPago ? (
+                <Text style={styles.warningText}>
+                  El administrador no agregó datos bancarios. Contacta al administrador para acordar el pago.
+                </Text>
+              ) : null}
+            </View>
+          ) : null}
 
           {metodo === "transferencia" && (
             <>
-              <TextInput style={styles.input} placeholder="Banco" value={banco} onChangeText={setBanco} />
-              <TextInput style={styles.input} placeholder="CLABE" value={clabe} onChangeText={setClabe} />
-              <TextInput
-                style={styles.input}
-                placeholder="Referencia"
+              <Input
+                label="Banco"
+                placeholder="Banco origen"
+                value={banco}
+                onChange={setBanco}
+                icon="business-outline"
+                containerStyle={styles.inputBlock}
+              />
+              <Input
+                label="CLABE"
+                placeholder="Cuenta origen"
+                value={clabe}
+                onChange={setClabe}
+                icon="card-outline"
+                containerStyle={styles.inputBlock}
+              />
+              <Input
+                label="Referencia"
+                placeholder="Folio o referencia"
                 value={referencia}
-                onChangeText={setReferencia}
+                onChange={setReferencia}
+                icon="reader-outline"
+                containerStyle={styles.inputBlock}
               />
               <UploadImage imagen={imagen || undefined} onPress={seleccionarImagen} />
             </>
           )}
 
           {metodo === "presencial" && (
-            <TextInput
-              style={styles.input}
-              placeholder="Persona que recibio el pago"
+            <Input
+              label="Persona que recibió el pago"
+              placeholder="Nombre de quien recibió"
               value={persona}
-              onChangeText={setPersona}
+              onChange={setPersona}
+              icon="person-outline"
+              containerStyle={styles.inputBlock}
             />
           )}
 
@@ -245,11 +310,28 @@ const styles = StyleSheet.create({
     backgroundColor: "#f5f6fa",
     paddingHorizontal: 16,
   },
-  input: {
-    backgroundColor: "#fff",
-    padding: 12,
-    borderRadius: 10,
+  inputBlock: {
     marginBottom: 10,
+  },
+  infoCard: {
+    backgroundColor: "#fff",
+    borderRadius: 14,
+    padding: 14,
+    marginBottom: 12,
+  },
+  infoTitle: {
+    color: "#1e73d8",
+    fontWeight: "700",
+    marginBottom: 8,
+  },
+  infoLine: {
+    color: "#334155",
+    marginBottom: 4,
+  },
+  warningText: {
+    color: "#b45309",
+    marginTop: 8,
+    lineHeight: 20,
   },
   submitButton: {
     backgroundColor: "#2563eb",
@@ -264,3 +346,14 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
 });
+
+
+
+
+
+
+
+
+
+
+

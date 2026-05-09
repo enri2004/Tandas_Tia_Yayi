@@ -5,7 +5,6 @@ import {
   ScrollView,
   StyleSheet,
   Text,
-  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
@@ -14,6 +13,7 @@ import { useFocusEffect } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
 import PerfilHeader from "../../../components/amigos/PerfilHeader";
 import PerfilImageActions from "../../../components/amigos/PerfilImageActions";
+import Input from "../../../components/ui/Input";
 import {
   actualizarUsuarioGuardadoLocal,
   obtenerUsuarioGuardado,
@@ -211,7 +211,11 @@ export default function PerfilAdminScreen() {
 
   return (
     <SafeAreaView style={styles.safe}>
-      <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        style={styles.container}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+      >
         <PerfilHeader
           perfil={perfil}
           subtitle={`${perfil.totalAmigos || 0} conexiones registradas`}
@@ -240,13 +244,25 @@ export default function PerfilAdminScreen() {
             { key: "direccion", label: "Direccion" },
           ].map((campo) => (
             <View key={campo.key} style={styles.fieldBlock}>
-              <Text style={styles.label}>{campo.label}</Text>
-              <TextInput
-                style={[styles.input, !editando && styles.inputDisabled]}
+              <Input
+                label={campo.label}
                 editable={editando}
                 value={form[campo.key as keyof typeof form]}
-                onChangeText={(value) => setForm((prev) => ({ ...prev, [campo.key]: value }))}
+                onChange={(value: string) => setForm((prev) => ({ ...prev, [campo.key]: value }))}
                 keyboardType={campo.key === "edad" ? "numeric" : "default"}
+                icon={
+                  campo.key === "correo"
+                    ? "mail-outline"
+                    : campo.key === "telefono"
+                    ? "call-outline"
+                    : campo.key === "direccion"
+                    ? "location-outline"
+                    : campo.key === "edad"
+                    ? "calendar-outline"
+                    : "person-outline"
+                }
+                containerStyle={styles.profileInput}
+                inputStyle={!editando ? styles.inputDisabled : undefined}
               />
             </View>
           ))}
@@ -303,17 +319,13 @@ const styles = StyleSheet.create({
   fieldBlock: {
     marginBottom: 12,
   },
+  profileInput: {
+    marginTop: 2,
+  },
   label: {
     color: "#6b7280",
     marginBottom: 6,
     fontWeight: "600",
-  },
-  input: {
-    backgroundColor: "#f9fafb",
-    borderRadius: 12,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    color: "#111827",
   },
   inputDisabled: {
     color: "#4b5563",

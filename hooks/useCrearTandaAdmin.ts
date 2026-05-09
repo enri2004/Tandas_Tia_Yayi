@@ -11,6 +11,10 @@ type FormularioCrearTanda = {
   frecuencia: string;
   fecha: string;
   descripcion: string;
+  claveInterbancaria: string;
+  nombreBeneficiario: string;
+  banco: string;
+  conceptoPago: string;
   estado: boolean;
   imagenUri: string;
 };
@@ -22,6 +26,10 @@ const formInicial: FormularioCrearTanda = {
   frecuencia: "quincenal",
   fecha: "",
   descripcion: "",
+  claveInterbancaria: "",
+  nombreBeneficiario: "",
+  banco: "",
+  conceptoPago: "",
   estado: true,
   imagenUri: "",
 };
@@ -168,6 +176,10 @@ export function useCrearTandaAdmin() {
         fecha: formulario.fecha.trim(),
         frecuencia: formulario.frecuencia,
         descripcion: formulario.descripcion.trim(),
+        claveInterbancaria: formulario.claveInterbancaria.trim(),
+        nombreBeneficiario: formulario.nombreBeneficiario.trim(),
+        banco: formulario.banco.trim(),
+        conceptoPago: formulario.conceptoPago.trim(),
         estado: formulario.estado,
         pagoRealizados: 0,
         turno: 1,

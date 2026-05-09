@@ -5,6 +5,7 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  useWindowDimensions,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -23,8 +24,8 @@ import { obtenerUsuarioGuardado } from "@/utils/api/login-registrar/authStorage"
 
 
 export default function DetallesScreen() {
- const { id } = useLocalSearchParams<{ id?: string }>();
- const [tanda, setTanda] = useState<TandaItem | null>(null);
+  const { id } = useLocalSearchParams<{ id?: string }>();
+  const [tanda, setTanda] = useState<TandaItem | null>(null);
   const [userId, setUserId] = useState("");
   const [loading, setLoading] = useState(true);
 
@@ -79,35 +80,40 @@ export default function DetallesScreen() {
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <View style={styles.container}>
-        <ScrollView showsVerticalScrollIndicator={false}>
-          <HeaderTanda
-            Titulo={tanda.nombre}
-            Participantes={tanda.participantes}
-          />
-          <CardInfo
-            Valor={tanda.pago}
-            Turno={turnoActual?.orden || 0}
-            Participantes={tanda.participantes}
-            Pagos={tanda.pagoRealizados || 0}
-          />
-          <FechaTurnoCard
-            fecha={turnoActual?.fechaProgramada || ""}
-            estado={turnoActual?.estadoPago || "pendiente"}
-          />
-          <CardProgreso
-            pagosRealizados={tanda.pagoRealizados || 0}
-            totalPagos={tanda.participantes}
-          />
-          <CardIntegrantes
-          integrantes={
-          Array.isArray(tanda.integrantes) &&
-          tanda.integrantes.length > 0 &&
-          typeof tanda.integrantes[0] === "object"
-          ? (tanda.integrantes as IntegranteItem[])
-          : []
-          }
-          />
-          <BotonesAccion tandaId={tanda._id} />
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.scrollContent}
+        >
+          <View style={styles.contentWrapper}>
+            <HeaderTanda
+              Titulo={tanda.nombre}
+              Participantes={tanda.participantes}
+            />
+            <CardInfo
+              Valor={tanda.pago}
+              Turno={turnoActual?.orden || 0}
+              Participantes={tanda.participantes}
+              Pagos={tanda.pagoRealizados || 0}
+            />
+            <FechaTurnoCard
+              fecha={turnoActual?.fechaProgramada || ""}
+              estado={turnoActual?.estadoPago || "pendiente"}
+            />
+            <CardProgreso
+              pagosRealizados={tanda.pagoRealizados || 0}
+              totalPagos={tanda.participantes}
+            />
+            <CardIntegrantes
+              integrantes={
+                Array.isArray(tanda.integrantes) &&
+                tanda.integrantes.length > 0 &&
+                typeof tanda.integrantes[0] === "object"
+                  ? (tanda.integrantes as IntegranteItem[])
+                  : []
+              }
+            />
+            <BotonesAccion tandaId={tanda._id} />
+          </View>
         </ScrollView>
       </View>
     </SafeAreaView>
@@ -118,6 +124,15 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#f5f6fa",
+  },
+  scrollContent: {
+    width: "100%",
+    paddingHorizontal: 0,
+    paddingBottom: 120,
+  },
+  contentWrapper: {
+    flex: 1,
+    width: "100%",
   },
   center: {
     flex: 1,

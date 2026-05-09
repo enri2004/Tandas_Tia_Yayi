@@ -106,6 +106,7 @@ export default function CrearTandaScreen() {
         <ScrollView
           style={styles.container}
           contentContainerStyle={[styles.content, { paddingBottom: tabBarHeight + 18 }]}
+          keyboardShouldPersistTaps="handled"
         >
           <ScreenHeader
             title="Crear Nueva Tanda"
@@ -155,6 +156,38 @@ export default function CrearTandaScreen() {
             onChange={(value) => actualizarCampo("descripcion", value)}
             placeholder="Describe reglas o notas de la tanda"
             multiline
+          />
+
+          <InputCard
+            icon="card-outline"
+            label="Clave interbancaria"
+            value={formulario.claveInterbancaria}
+            onChange={(value) => actualizarCampo("claveInterbancaria", value)}
+            placeholder="Opcional"
+          />
+
+          <InputCard
+            icon="person-outline"
+            label="Nombre del beneficiario"
+            value={formulario.nombreBeneficiario}
+            onChange={(value) => actualizarCampo("nombreBeneficiario", value)}
+            placeholder="Opcional"
+          />
+
+          <InputCard
+            icon="business-outline"
+            label="Banco"
+            value={formulario.banco}
+            onChange={(value) => actualizarCampo("banco", value)}
+            placeholder="Opcional"
+          />
+
+          <InputCard
+            icon="reader-outline"
+            label="Concepto de pago"
+            value={formulario.conceptoPago}
+            onChange={(value) => actualizarCampo("conceptoPago", value)}
+            placeholder="Opcional"
           />
 
           <SelectorImagenTanda

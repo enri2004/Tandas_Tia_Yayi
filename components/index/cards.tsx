@@ -1,7 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import React from "react";
-import { StyleSheet, Text, View } from "react-native";
-import { useResponsive } from "../../hooks/useResponsive";
+import { StyleSheet, Text, View, useWindowDimensions } from "react-native";
 
 type Props = {
   tandasActivas?: number;
@@ -42,57 +41,59 @@ export default function CardsDashboard({
   proximoTurnoNumero = null,
   proximoTurnoMonto = null,
 }: Props) {
-  const { compactLabelSize, bodySize, titleSize } = useResponsive();
+  const { width } = useWindowDimensions();
+  const isCompact = width < 390;
+  const stackCards = width < 360;
 
   return (
-    <View style={styles.containerCard}>
+    <View style={[styles.containerCard, stackCards && styles.containerCardStack]}>
       <View style={styles.card}>
         <View style={[styles.floatingHeader, styles.blue]}>
-          <Text style={[styles.headerText, { fontSize: compactLabelSize }]}>
+          <Text style={[styles.headerText, { fontSize: isCompact ? 10.5 : 11.5 }]}>
             Resumen de Tandas
           </Text>
-          <Text style={[styles.bigText, { fontSize: bodySize + 2 }]} numberOfLines={2}>
+          <Text style={[styles.bigText, { fontSize: isCompact ? 13 : 14 }]} numberOfLines={2}>
             {tandasActivas} Tandas Activas
           </Text>
         </View>
 
         <View style={styles.body}>
           <View style={styles.row}>
-            <Text style={[styles.label, { fontSize: compactLabelSize }]}>Próximo Pago:</Text>
-            <Text style={[styles.value, { fontSize: compactLabelSize }]}>
+            <Text style={[styles.label, { fontSize: isCompact ? 10.5 : 11.5 }]}>Próximo Pago:</Text>
+            <Text style={[styles.value, { fontSize: isCompact ? 10.5 : 11.5 }]} numberOfLines={1}>
               {formatearMoneda(proximoPagoMonto)}
             </Text>
           </View>
 
           <View style={styles.fechaBlock}>
-            <Text style={[styles.label, { fontSize: compactLabelSize }]}>Fecha Límite:</Text>
+            <Text style={[styles.label, { fontSize: isCompact ? 10.5 : 11.5 }]}>Fecha Límite:</Text>
             <View style={styles.iconRow}>
-              <Text style={[styles.value, { fontSize: compactLabelSize }]}>
+              <Text style={[styles.value, { fontSize: isCompact ? 10.5 : 11.5 }]} numberOfLines={1}>
                 {formatearFecha(proximaFechaLimite)}
               </Text>
-              <Ionicons name="calendar-outline" size={18} color="#555" />
+              <Ionicons name="calendar-outline" size={16} color="#555" />
             </View>
           </View>
         </View>
       </View>
 
       <View style={styles.card}>
-        <View style={[styles.floatingHeader1, styles.green]}>
+        <View style={[styles.floatingHeader, styles.green]}>
           <View style={styles.rowBetween}>
-            <Text style={[styles.headerText, { fontSize: compactLabelSize }]}>
+            <Text style={[styles.headerText, { fontSize: isCompact ? 10.5 : 11.5 }]}>
               Próximo Turno
             </Text>
-            <Ionicons name="gift-outline" size={20} color="white" />
+            <Ionicons name="gift-outline" size={18} color="white" />
           </View>
 
-          <Text style={[styles.bigText, { fontSize: bodySize + 2 }]} numberOfLines={2}>
+          <Text style={[styles.bigText, { fontSize: isCompact ? 13 : 14 }]} numberOfLines={2}>
             {proximoTurnoNumero ? `Tu Turno #${proximoTurnoNumero}` : "Sin turno asignado"}
           </Text>
         </View>
 
-        <View style={styles.body1}>
-          <Text style={[styles.label, { fontSize: compactLabelSize }]}>Monto a Recibir:</Text>
-          <Text style={[styles.amount, { fontSize: titleSize }]} numberOfLines={1}>
+        <View style={styles.body}>
+          <Text style={[styles.label, { fontSize: isCompact ? 10.5 : 11.5 }]}>Monto a Recibir:</Text>
+          <Text style={[styles.amount, { fontSize: isCompact ? 15 : 17 }]} numberOfLines={1}>
             {formatearMoneda(proximoTurnoMonto)}
           </Text>
         </View>
@@ -103,29 +104,31 @@ export default function CardsDashboard({
 
 const styles = StyleSheet.create({
   containerCard: {
+    flexDirection: "row",
+    gap: 12,
     marginBottom: 18,
-    gap: 18,
+  },
+  containerCardStack: {
+    flexDirection: "column",
   },
   card: {
-    width: "100%",
+    flex: 1,
+    minHeight: 135,
     backgroundColor: "#fff",
     borderRadius: 16,
     marginTop: 22,
-    paddingTop: 35,
+    paddingTop: 44,
+    paddingHorizontal: 10,
+    paddingBottom: 12,
     elevation: 4,
   },
   floatingHeader: {
     position: "absolute",
     top: -20,
-    width: "100%",
-    padding: 15,
-    borderRadius: 12,
-  },
-  floatingHeader1: {
-    position: "absolute",
-    top: -20,
-    width: "100%",
-    padding: 25,
+    left: 0,
+    right: 0,
+    paddingVertical: 12,
+    paddingHorizontal: 12,
     borderRadius: 12,
   },
   blue: { backgroundColor: "#4A90E2" },
@@ -136,14 +139,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   headerText: { color: "#fff" },
-  bigText: { color: "#fff", fontWeight: "bold" },
-  body: { padding: 12, marginTop: 10 },
-  body1: { padding: 12, marginTop: 40 },
+  bigText: { color: "#fff", fontWeight: "bold", marginTop: 4 },
+  body: { marginTop: 2 },
   row: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 6,
-    gap: 12,
+    gap: 4,
   },
   fechaBlock: {
     marginTop: 10,
@@ -153,8 +152,8 @@ const styles = StyleSheet.create({
   iconRow: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 6,
-    flexWrap: "wrap",
+    gap: 4,
+    marginTop: 2,
   },
   amount: {
     fontWeight: "bold",

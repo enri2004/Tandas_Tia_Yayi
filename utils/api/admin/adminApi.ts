@@ -22,6 +22,10 @@ export const crearTandaAdmin = async (payload: CrearTandaPayload) => {
     formData.append("fecha", resto.fecha);
     formData.append("frecuencia", resto.frecuencia || "");
     formData.append("descripcion", resto.descripcion || "");
+    formData.append("claveInterbancaria", resto.claveInterbancaria || "");
+    formData.append("nombreBeneficiario", resto.nombreBeneficiario || "");
+    formData.append("banco", resto.banco || "");
+    formData.append("conceptoPago", resto.conceptoPago || "");
     formData.append("estado", String(resto.estado ?? true));
     formData.append("pagoRealizados", String(resto.pagoRealizados ?? 0));
     formData.append("turno", String(resto.turno ?? 1));
@@ -66,5 +70,15 @@ export const asignarTurnosTandaAdmin = async (
   payload: { integrantesOrdenados?: string[]; aleatorio?: boolean }
 ) => {
   const response = await API.put(`/Tandas/${tandaId}/turnos`, payload);
+  return response.data;
+};
+
+export const notificarEntregaTurnoAdmin = async (tandaId: string, numeroTurno: number) => {
+  const response = await API.post(`/Tandas/${tandaId}/turnos/${numeroTurno}/notificar-entrega`);
+  return response.data;
+};
+
+export const marcarTurnoEntregadoAdmin = async (tandaId: string, numeroTurno: number) => {
+  const response = await API.put(`/Tandas/${tandaId}/turnos/${numeroTurno}/entregado`);
   return response.data;
 };

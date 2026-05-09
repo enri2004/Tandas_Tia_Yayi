@@ -1,5 +1,5 @@
 import { guardarSesion } from "./authStorage";
-import { loginUsuario } from "./userapi";
+import { loginUsuario, obtenerPerfilUsuario } from "./userapi";
 import {
   registrarDispositivoParaPush,
   sincronizarPushTokenConBackend,
@@ -13,22 +13,20 @@ type LoginParams = {
 
 type LoginDeps = {
   setLoading: (value: boolean) => void;
-  onAdmin: () => void;
-  onUsuario: () => void;
+  onResolved: (payload: { usuario: any; token: string }) => void;
   onError: (mensaje: string) => void;
   onSuccess?: (mensaje: string) => void;
 };
-
 export const iniciarSesionUsuario = async (
   datos: LoginParams,
   deps: LoginDeps
 ) => {
   const { correo, password } = datos;
-  const { setLoading, onAdmin, onUsuario, onError, onSuccess } = deps;
+  const { setLoading, onResolved, onError, onSuccess } = deps;
 
   try {
     if (!correo.trim() || !password.trim()) {
-      onError("Completa correo/usuario y contrasena");
+      onError("Completa correo/usuario y contraseña");
       return;
     }
 
@@ -36,38 +34,69 @@ export const iniciarSesionUsuario = async (
     await prewarmApi().catch(() => null);
 
     const respuesta = await loginUsuario(correo.trim(), password);
-    console.log("[Push] Login exitoso, usuario:", respuesta?.usuario?.id);
 
+    const token = respuesta.token || respuesta.Token || respuesta.jwt;
+    const usuario = respuesta.usuario || respuesta.user;
+
+    if (!token) {
+      console.log("Respuesta login:", respuesta);
+      onError("El servidor no devolvió token.");
+      return;
+    }
+
+    if (!usuario) {
+      console.log("Respuesta login:", respuesta);
+      onError("El servidor no devolvió usuario.");
+      return;
+    }
+
+    // PRIMERO guarda sesión
     await guardarSesion({
-      token: respuesta.token,
-      usuario: respuesta.usuario,
+      token,
+      usuario,
     });
-    console.log("[Push] JWT guardado localmente:", Boolean(respuesta?.token));
+
+    let usuarioCompleto = usuario;
+
+    // DESPUÉS ya puedes pedir perfil porque el token ya existe
+    try {
+      const perfilRespuesta = await obtenerPerfilUsuario(usuario.id || usuario._id);
+      usuarioCompleto = {
+        ...usuario,
+        ...perfilRespuesta?.perfil,
+      };
+
+      await guardarSesion({
+        token,
+        usuario: usuarioCompleto,
+      });
+    } catch (perfilError) {
+      console.log("No se pudo cargar perfil completo:", perfilError);
+    }
 
     try {
       await registrarDispositivoParaPush();
-      await sincronizarPushTokenConBackend(respuesta.token);
+      await sincronizarPushTokenConBackend(token);
     } catch (pushError) {
-      console.log(
-        "No se pudo sincronizar el token push despues del login",
-        pushError
-      );
+      console.log("No se pudo sincronizar el token push después del login", pushError);
     }
 
     if (onSuccess) {
-      onSuccess(respuesta.mensaje || "Inicio de sesion correcto");
+      onSuccess(respuesta.mensaje || "Inicio de sesión correcto");
     }
 
-    if (respuesta.usuario.rol === "admin") {
-      onAdmin();
-    } else {
-      onUsuario();
-    }
+    onResolved({
+      usuario: usuarioCompleto,
+      token,
+    });
   } catch (error: any) {
-    console.log(error);
+    console.log("Error login:", error?.response?.data || error);
 
     const mensaje =
-      error?.response?.data?.mensaje || error?.message || "No se pudo iniciar sesion";
+      error?.response?.data?.mensaje ||
+      error?.response?.data?.detalle ||
+      error?.message ||
+      "No se pudo iniciar sesión";
 
     onError(mensaje);
   } finally {

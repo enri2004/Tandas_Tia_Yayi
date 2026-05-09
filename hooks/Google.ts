@@ -1,21 +1,24 @@
 import React from "react";
-import { View, Button, Text, Image } from "react-native";
 import * as WebBrowser from "expo-web-browser";
 import * as Google from "expo-auth-session/providers/google";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 
 WebBrowser.maybeCompleteAuthSession();
 
-export default function GoogleLogin({onSuccess}:any) {
-  const [userInfo, setUserInfo] = React.useState<any>(null);
+const GOOGLE_WEB_CLIENT_ID =
+  process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID ||
+  "1013318565134-p27ksi15bik78pqcdusfg4h7qtiij0lb.apps.googleusercontent.com";
+const GOOGLE_IOS_CLIENT_ID =
+  process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID ||
+  "1013318565134-m1k6sfpoa20jt925u3142h0detaoa2g5.apps.googleusercontent.com";
+const GOOGLE_ANDROID_CLIENT_ID =
+  process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID ||
+  "1013318565134-gi4n2qn8920baus0bpdhbgurv1kaa8gv.apps.googleusercontent.com";
 
+export default function GoogleLogin(onSuccess: (user: any) => void) {
   const [request, response, promptAsync] = Google.useAuthRequest({
-    webClientId:
-      "1013318565134-p27ksi15bik78pqcdusfg4h7qtiij0lb.apps.googleusercontent.com",
-    iosClientId:
-      "1013318565134-m1k6sfpoa20jt925u3142h0detaoa2g5.apps.googleusercontent.com",
-    androidClientId:
-      "1013318565134-gi4n2qn8920baus0bpdhbgurv1kaa8gv.apps.googleusercontent.com",
+    webClientId: GOOGLE_WEB_CLIENT_ID,
+    iosClientId: GOOGLE_IOS_CLIENT_ID,
+    androidClientId: GOOGLE_ANDROID_CLIENT_ID,
   });
   React.useEffect(() => {
     if (response?.type === "success") {
@@ -32,10 +35,17 @@ export default function GoogleLogin({onSuccess}:any) {
     });
 
     const user = await res.json();
-    await AsyncStorage.setItem("@user", JSON.stringify(user));
-
     onSuccess(user);
   };
 
-  return { promptAsync, request };
+  const promptSelectAccount = React.useCallback(
+    (options?: Parameters<typeof promptAsync>[0]) =>
+      promptAsync({
+        ...options,
+        prompt: "select_account",
+      } as Parameters<typeof promptAsync>[0]),
+    [promptAsync]
+  );
+
+  return { promptAsync: promptSelectAccount, request };
 }

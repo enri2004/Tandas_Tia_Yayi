@@ -23,10 +23,11 @@ export default function FechaTurnoCard({
 
 const styles = StyleSheet.create({
   card: {
+    width: "100%",
     backgroundColor: "white",
     marginTop: 14,
-    marginHorizontal: 20,
-    borderRadius: 20,
+    marginHorizontal: 0,
+    borderRadius: 24,
     padding: 18,
     elevation: 5,
     alignItems: "center",

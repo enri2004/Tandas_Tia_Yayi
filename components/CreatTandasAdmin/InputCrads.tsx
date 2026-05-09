@@ -1,7 +1,6 @@
-// src/components/crearTanda/InputCard.tsx
-
-import { View, Text, TextInput, StyleSheet } from "react-native";
+import { View, Text, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import Input from "../ui/Input";
 
 type Props = {
   icon: any;
@@ -25,19 +24,19 @@ export default function InputCard({
   return (
     <View style={styles.card}>
       <View style={styles.row}>
-        <Ionicons name={icon} size={22} color="#22c55e" />
+        <Ionicons name={icon} size={22} color="#1e73d8" />
         <Text style={styles.label}>{label}</Text>
       </View>
 
-      <TextInput
+      <Input
+        label=""
         placeholder={placeholder}
-        placeholderTextColor="#aaa"
-        style={[styles.input, multiline && styles.inputMultiline]}
         value={value}
-        onChangeText={onChange}
+        onChange={onChange}
         keyboardType={keyboardType}
         multiline={multiline}
-        textAlignVertical={multiline ? "top" : "center"}
+        icon={icon}
+        containerStyle={styles.inputContainer}
       />
     </View>
   );
@@ -59,12 +58,7 @@ const styles = StyleSheet.create({
   label: {
     color: "#000"
   },
-  input: {
-    color: "#000",
-    padding: 10,
-    borderRadius: 8,
-  },
-  inputMultiline: {
-    minHeight: 86,
+  inputContainer: {
+    marginTop: 2,
   },
 });

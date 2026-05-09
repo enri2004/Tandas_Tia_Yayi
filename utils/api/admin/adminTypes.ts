@@ -83,6 +83,10 @@ export type CrearTandaPayload = {
   fecha: string;
   frecuencia?: string;
   descripcion?: string;
+  claveInterbancaria?: string;
+  nombreBeneficiario?: string;
+  banco?: string;
+  conceptoPago?: string;
   estado?: boolean;
   pagoRealizados?: number;
   turno?: number;

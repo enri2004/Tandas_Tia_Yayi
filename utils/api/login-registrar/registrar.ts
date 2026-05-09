@@ -18,7 +18,7 @@ type RegistroParams = {
 type RegistroDeps = {
   setLoading: (value: boolean) => void;
   limpiarFormulario: () => void;
-  onSuccess: () => void;
+  onSuccess: (payload?: any) => void;
   onError: (mensaje: string) => void;
 };
 
@@ -68,7 +68,7 @@ export const registrarUsuario = async (
     }
 
     limpiarFormulario();
-    onSuccess();
+    onSuccess(respuesta);
   } catch (error: any) {
     console.log("Error al registrar usuario:", error?.response?.data || error);
     const mensaje =
