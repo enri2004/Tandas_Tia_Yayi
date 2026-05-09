@@ -4,14 +4,14 @@
     "slug": "Tandas-app",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/tandas2.png",
+    "icon": "./assets/images/icon.png",
     "scheme": "tandasapp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#8C5A3C",
-        "foregroundImage": "./assets/images/tandas2.png"
+        "foregroundImage": "./assets/images/android-icon-foreground.png"
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
@@ -25,7 +25,7 @@
     },
     "ios": {
       "supportsTablet": true,
-      "icon": "./assets/images/tandas2.png",
+      "icon": "./assets/images/icon.png",
       "bundleIdentifier": "com.enri.tandasyayi",
       "runtimeVersion": {
         "policy": "appVersion"
@@ -33,13 +33,15 @@
     },
     "web": {
       "output": "static",
-      "favicon": "./assets/images/tandas2.png"
+      "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
       "expo-router",
       [
         "expo-splash-screen",
         {
+          "backgroundColor": "#FFFFFF",
+          "image": "./assets/images/splash-icon.png",
           "dark": {
             "backgroundColor": "#000000"
           }
@@ -71,6 +73,6 @@
     "owner": "enri12",
     "updates": {
       "url": "https://u.expo.dev/e6db8ff6-1885-460a-b2d1-32746b0c3089"
-    },
+    }
   }
 }
